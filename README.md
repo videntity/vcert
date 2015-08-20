@@ -3,11 +3,9 @@ README
 
 `vcert`  A web-based certificate authority mangement system built atop OpenSSL.
 
-Copyright Alan Viars 2013
+Copyright Alan Viars 2013-2015
 
 Open Source License: MPL See LICENSE.txt
-
-Last Updated: November 4, 2013
 
 About
 -----
@@ -135,16 +133,15 @@ new CA keypair with a password on the pricate key.  It assumes the domain
 `ca.example.com` and uses the configuration file
 `/opt/ca/conf/ca.example.com.cnf`. Before this next step,  you will likely want
 to make adjustment there such the changing "example.com" to your domain, setting
-organizational name, city, state, and so on.  Here are the step.
-
+organizational name, city, state, and so on.  Here are the stes.
 
 
     cd /opt/ca
     openssl req -nodes -config conf/ca.example.com.cnf -days 7330 -x509 -newkey rsa:4096 -out public/ca.example.com.pem -outform PEM
     openssl rsa -des3 -in ./private/ca.example.comKey.pem -out ./private/ca.example.comKey.pem
 
-You will end up with the CA's public key in '/opt/ca/public' and the private key
-in '/opt/ca/private'.
+You will end up with the CA's public key in `/opt/ca/public` and the private key
+in `/opt/ca/private`.
 
 You need to publish the CA's public certificate and CRL somehere.  `ca`
 (e.g. `ca.example.com`) is a reasonable place. In the above example, we used
