@@ -1,0 +1,70 @@
+[ req ]
+default_bits            = 4096
+default_keyfile         = /opt/ca/private/sampleca.nist.govKey.pem
+default_md              = sha256
+prompt                  = no
+distinguished_name      = root_ca_distinguished_name
+x509_extensions         = v3_ca
+
+[ root_ca_distinguished_name ]
+countryName             = US
+stateOrProvinceName     = Maryland
+localityName            = Gaithersburg
+0.organizationName      = Sample CA for NIST - For Testing Only
+commonName              = sampleca.nist.gov
+emailAddress            = alan.viars@nist.gov
+
+[ v3_ca ]
+subjectKeyIdentifier    = hash
+subjectAltName          = @alt_names
+authorityKeyIdentifier  = keyid:always,issuer:always
+basicConstraints        = critical, CA:true
+keyUsage                = critical, keyCertSign, cRLSign
+crlDistributionPoints   = URI:http://sampleca.nist.gov/crl/sampleca.nist.gov.crl
+
+
+[alt_names]
+DNS.1                   = sampleca.nist.gov
+
+[ ca ]
+default_ca              = CA_default
+
+[ CA_default ]
+dir                     = .
+new_certs_dir           = /opt/ca/signed-keys/
+database                = /opt/ca/conf/index
+certificate             = /opt/ca/public/sampleca.nist.gov.pem
+serial                  = /opt/ca/conf/serial
+private_key             = /opt/ca/private/sampleca.nist.govKey.pem
+x509_extensions         = usr_cert
+name_opt                = ca_default
+cert_opt                = ca_default
+default_crl_days        = 01
+default_days            = 365
+default_md              = sha256
+preserve                = no
+policy                  = policy_match
+basicConstraints        = critical, CA:true
+
+[ policy_match ]
+countryName             = match
+stateOrProvinceName     = supplied
+localityName            = supplied
+organizationName        = supplied
+organizationalUnitName  = optional
+commonName              = supplied
+emailAddress            = supplied
+
+[ usr_cert ]
+basicConstraints        = CA:FALSE
+subjectKeyIdentifier    = hash
+authorityKeyIdentifier  = keyid,issuer:always
+keyUsage                = keyCertSign, cRLSign
+subjectAltName          = DNS: |DNS|
+crlDistributionPoints   = URI:http://sampleca.nist.gov/crl/sampleca.nist.gov.crl
+serial                  = /opt/ca/conf/serial
+
+
+[ crl_ext ]
+authorityKeyIdentifier   = keyid:always,issuer:always
+

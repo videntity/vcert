@@ -1,0 +1,7 @@
+{
+    "SerialNumber": "2B", 
+    "CommonName": "foo.hi.com", 
+    "CertStatus": "revoked", 
+    "CertSHA1Fingerprint": "1F:14:EE:8C:19:7D:90:96:E0:FC:78:94:F9:C2:D4:5C:02:36:9E:44", 
+    "ThisUpdate": "2015-08-20 14:15:58.817026"
+}

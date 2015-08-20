@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<section id="register">
+  <div class="page-header">
+    <h1>{% trans "Take the Survey" %}</h1>
+  </div>
+
+  
+<div class="row">
+    <div class="span8">
+      <form class="well" method="post" action="">
+        {% csrf_token %}
+        <p>{% trans "Fields marked wth an asterisk (*) are required." %}</p>
+        
+        {% if  form.non_field_errors %}
+            {{ form.non_field_errors }} 
+        {% endif %}
+        <table>
+        {% for field in form %}
+            <tr>
+                <td>
+                    {{ field.label_tag }}
+                </td>
+                <td>
+                    {{ field.errors }}
+                    {{ field }}
+                    {% if field.field.required %}*{% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </table>
+        <input type="submit" class="btn large btn-primary" value="{% trans 'Continue' %}" />
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}
+

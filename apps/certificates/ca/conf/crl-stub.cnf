@@ -1,0 +1,66 @@
+[ req ]
+default_bits            = 4096
+default_keyfile         = |PRIVATE_KEY|
+default_md              = sha256
+prompt                  = no
+distinguished_name      = sub_distinguished_name
+x509_extensions         = v3_ca
+
+[ sub_ca_distinguished_name ]
+countryName             = |COUNTRY|
+stateOrProvinceName     = |STATE|
+localityName            = |CITY|
+0.organizationName      = |ORGANIZATION|
+commonName              = |COMMON_NAME|
+emailAddress            = |EMAIL_ADDRESS|
+
+[ v3_ca ]
+subjectKeyIdentifier    = hash
+subjectAltName          = @alt_names
+authorityKeyIdentifier  = keyid:always,issuer:always
+basicConstraints        = critical, CA:true
+keyUsage                = keyCertSign, cRLSign
+crlDistributionPoints   = URI:http://sampleca.nist.gov/crl/sampleca.nist.gov.crl
+
+[alt_names]
+DNS.1                   = ca.example.com
+
+[ ca ]
+default_ca              = CA_default
+
+[ CA_default ]
+dir                     = .
+new_certs_dir           = /opt/ca/signed-keys/
+database                = |COMPLETED_ANCHOR_DIR|/index
+certificate             = |CERTIFICATE|
+serial                  = /opt/ca/conf/serial
+private_key             = |PRIVATE_KEY|
+x509_extensions         = usr_cert
+name_opt                = ca_default
+cert_opt                = ca_default
+default_crl_days        = 30
+default_days            = |DAYS|
+default_md              = sha256
+preserve                = no
+policy                  = policy_match
+
+[ policy_match ]
+countryName             = match
+stateOrProvinceName     = supplied
+localityName            = supplied
+organizationName        = supplied
+organizationalUnitName  = optional
+commonName              = supplied
+emailAddress            = supplied
+
+[ usr_cert ]
+basicConstraints        = CA:FALSE
+subjectAltName          = DNS: |DNS|
+subjectKeyIdentifier    = hash
+authorityKeyIdentifier  = keyid:always #, issuer:always
+keyUsage                = digitalSignature, keyEncipherment
+#crlDistributionPoints   = URI:http://ca.example.com/crl/|ANCHORDNS|.crl
+
+
+[ crl_ext ]
+authorityKeyIdentifier  = keyid:always,issuer:always

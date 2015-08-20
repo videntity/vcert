@@ -1,0 +1,16 @@
+
+{% for field in form %}
+    {{ field.errors }}
+
+    {% if "day" in field.label_tag %}
+    <p class="Day_Horizontal">
+        {{ field.label_tag }}<br/>
+        {{ field }}
+    </p>
+    {% else %}
+    <p class="{{ field.css_classes }}">
+        {{ field.label_tag }}<br/>
+        {{ field }}
+    </p>
+    {% endif %}
+{% endfor %}

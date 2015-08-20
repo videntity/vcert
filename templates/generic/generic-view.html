@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block middle %}
+<div class="header-box">
+    <h1>{{ name }}: <em>{{ pp.first_name|capfirst }} {{ pp.last_name|capfirst }} ({{ pp.patient_id }})</em></h1>
+</div>
+
+<div class="content-box group">    
+
+    <div class="column-main no-sidebar">
+
+        {% if toptext %}
+            <p class="legal-footnote">{{toptext}}</p>
+            <hr/>
+        {% endif %}
+
+        <table class="data-view">
+            <tr>
+                <td class="data-label">Collected By: </td>
+                <td class="data-value">{{ worker }} on {{model.creation_date}}</td>
+            </tr>
+            <tr><td class="data-divider" colspan="2"><hr/></td></tr>
+
+            {% for key,value in model.items %}
+            <tr>
+                <td class="data-label">{{key}}:</td>
+                <td class="data-value">{{value|default_if_none:"No Answer"}}</td>
+            </tr>
+            {% endfor %}
+        
+            <tr><td class="data-divider" colspan="2"><hr/></td></tr>
+            <tr>
+                <td class="data-label">Worker Signature:</td>
+                <td class="data-value"><img src="/rendersigs/{{ worker_signature_url }}" /></td>
+            </tr>
+            <tr>
+                <td class="data-label">Patient Signature:</td>
+                <td class="data-value"><img src="/rendersigs/{{ patient_signature_url }}" /></td>
+            </tr>
+        </table>
+
+        {% if bottomtext %}
+            <hr/>
+            <p class="legal-footnote">{{bottomtext}}</p>
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

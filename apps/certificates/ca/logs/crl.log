@@ -1,0 +1,255 @@
+Error.
+(<type 'exceptions.UnboundLocalError'>, UnboundLocalError("local variable 'url' referenced before assignment",), <traceback object at 0x2ae8320>)
+Upload failed @ %s
+A CRL was created for the CA/RA.
+copy /opt/ca/completed/nist/anchors/bad.nist.gov/bad.nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-05 18:00:02.288250. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/bad.nist.gov.crl
+A CRL was created for the Trust Anchor bad.nist.gov
+copy /opt/ca/completed/acv/anchors/example.com/example.com.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-05 18:00:02.359566. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/example.com.crl
+A CRL was created for the Trust Anchor example.com
+copy /opt/ca/completed/nist/anchors/nist.gov/nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-05 18:00:02.438260. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/nist.gov.crl
+A CRL was created for the Trust Anchor nist.gov
+Upload failed @ %s
+A CRL was created for the CA/RA.
+copy /opt/ca/completed/nist/anchors/bad.nist.gov/bad.nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-05 20:00:02.276477. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/bad.nist.gov.crl
+A CRL was created for the Trust Anchor bad.nist.gov
+copy /opt/ca/completed/acv/anchors/example.com/example.com.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-05 20:00:02.363326. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/example.com.crl
+A CRL was created for the Trust Anchor example.com
+copy /opt/ca/completed/nist/anchors/nist.gov/nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-05 20:00:02.454983. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/nist.gov.crl
+A CRL was created for the Trust Anchor nist.gov
+Upload failed @ %s
+A CRL was created for the CA/RA.
+copy /opt/ca/completed/nist/anchors/bad.nist.gov/bad.nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-05 22:00:02.186276. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/bad.nist.gov.crl
+A CRL was created for the Trust Anchor bad.nist.gov
+copy /opt/ca/completed/acv/anchors/example.com/example.com.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-05 22:00:02.274380. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/example.com.crl
+A CRL was created for the Trust Anchor example.com
+copy /opt/ca/completed/nist/anchors/nist.gov/nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-05 22:00:02.359714. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/nist.gov.crl
+A CRL was created for the Trust Anchor nist.gov
+Upload failed @ %s
+A CRL was created for the CA/RA.
+copy /opt/ca/completed/nist/anchors/bad.nist.gov/bad.nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 00:00:02.163835. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/bad.nist.gov.crl
+A CRL was created for the Trust Anchor bad.nist.gov
+copy /opt/ca/completed/acv/anchors/example.com/example.com.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 00:00:02.263136. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/example.com.crl
+A CRL was created for the Trust Anchor example.com
+copy /opt/ca/completed/nist/anchors/nist.gov/nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 00:00:02.355545. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/nist.gov.crl
+A CRL was created for the Trust Anchor nist.gov
+Upload failed @ %s
+A CRL was created for the CA/RA.
+copy /opt/ca/completed/nist/anchors/bad.nist.gov/bad.nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 02:00:02.879169. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/bad.nist.gov.crl
+A CRL was created for the Trust Anchor bad.nist.gov
+copy /opt/ca/completed/acv/anchors/example.com/example.com.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 02:00:02.978436. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/example.com.crl
+A CRL was created for the Trust Anchor example.com
+copy /opt/ca/completed/nist/anchors/nist.gov/nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 02:00:03.086041. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/nist.gov.crl
+A CRL was created for the Trust Anchor nist.gov
+Upload failed @ %s
+A CRL was created for the CA/RA.
+copy /opt/ca/completed/nist/anchors/bad.nist.gov/bad.nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 04:00:02.988826. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/bad.nist.gov.crl
+A CRL was created for the Trust Anchor bad.nist.gov
+copy /opt/ca/completed/acv/anchors/example.com/example.com.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 04:00:03.093139. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/example.com.crl
+A CRL was created for the Trust Anchor example.com
+copy /opt/ca/completed/nist/anchors/nist.gov/nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 04:00:03.185522. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/nist.gov.crl
+A CRL was created for the Trust Anchor nist.gov
+Upload failed @ %s
+A CRL was created for the CA/RA.
+copy /opt/ca/completed/nist/anchors/bad.nist.gov/bad.nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 06:00:02.750278. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/bad.nist.gov.crl
+A CRL was created for the Trust Anchor bad.nist.gov
+copy /opt/ca/completed/acv/anchors/example.com/example.com.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 06:00:02.835996. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/example.com.crl
+A CRL was created for the Trust Anchor example.com
+copy /opt/ca/completed/nist/anchors/nist.gov/nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 06:00:02.940537. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/nist.gov.crl
+A CRL was created for the Trust Anchor nist.gov
+Upload failed @ %s
+A CRL was created for the CA/RA.
+copy /opt/ca/completed/nist/anchors/bad.nist.gov/bad.nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 08:00:02.819314. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/bad.nist.gov.crl
+A CRL was created for the Trust Anchor bad.nist.gov
+copy /opt/ca/completed/acv/anchors/example.com/example.com.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 08:00:03.009368. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/example.com.crl
+A CRL was created for the Trust Anchor example.com
+copy /opt/ca/completed/nist/anchors/nist.gov/nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 08:00:03.155679. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/nist.gov.crl
+A CRL was created for the Trust Anchor nist.gov
+Upload failed @ %s
+A CRL was created for the CA/RA.
+copy /opt/ca/completed/nist/anchors/bad.nist.gov/bad.nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 10:00:03.099556. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/bad.nist.gov.crl
+A CRL was created for the Trust Anchor bad.nist.gov
+copy /opt/ca/completed/acv/anchors/example.com/example.com.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 10:00:03.199489. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/example.com.crl
+A CRL was created for the Trust Anchor example.com
+copy /opt/ca/completed/nist/anchors/nist.gov/nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 10:00:03.294259. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/nist.gov.crl
+A CRL was created for the Trust Anchor nist.gov
+Upload failed @ %s
+A CRL was created for the CA/RA.
+copy /opt/ca/completed/nist/anchors/bad.nist.gov/bad.nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 12:00:02.047949. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/bad.nist.gov.crl
+A CRL was created for the Trust Anchor bad.nist.gov
+copy /opt/ca/completed/acv/anchors/example.com/example.com.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 12:00:02.135467. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/example.com.crl
+A CRL was created for the Trust Anchor example.com
+copy /opt/ca/completed/nist/anchors/nist.gov/nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 12:00:02.226496. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/nist.gov.crl
+A CRL was created for the Trust Anchor nist.gov
+Upload failed @ %s
+A CRL was created for the CA/RA.
+copy /opt/ca/completed/nist/anchors/bad.nist.gov/bad.nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 14:00:02.302641. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/bad.nist.gov.crl
+A CRL was created for the Trust Anchor bad.nist.gov
+copy /opt/ca/completed/acv/anchors/example.com/example.com.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 14:00:02.389529. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/example.com.crl
+A CRL was created for the Trust Anchor example.com
+copy /opt/ca/completed/nist/anchors/nist.gov/nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 14:00:02.531507. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/nist.gov.crl
+A CRL was created for the Trust Anchor nist.gov
+Upload failed @ %s
+A CRL was created for the CA/RA.
+copy /opt/ca/completed/nist/anchors/bad.nist.gov/bad.nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 16:00:03.993795. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/bad.nist.gov.crl
+A CRL was created for the Trust Anchor bad.nist.gov
+copy /opt/ca/completed/acv/anchors/example.com/example.com.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 16:00:04.280069. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/example.com.crl
+A CRL was created for the Trust Anchor example.com
+copy /opt/ca/completed/nist/anchors/nist.gov/nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 16:00:04.535310. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/nist.gov.crl
+A CRL was created for the Trust Anchor nist.gov
+Upload failed @ %s
+A CRL was created for the CA/RA.
+copy /opt/ca/completed/nist/anchors/bad.nist.gov/bad.nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 18:00:02.601376. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/bad.nist.gov.crl
+A CRL was created for the Trust Anchor bad.nist.gov
+copy /opt/ca/completed/acv/anchors/example.com/example.com.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 18:00:02.692874. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/example.com.crl
+A CRL was created for the Trust Anchor example.com
+copy /opt/ca/completed/nist/anchors/nist.gov/nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 18:00:02.781895. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/nist.gov.crl
+A CRL was created for the Trust Anchor nist.gov
+Upload failed @ %s
+A CRL was created for the CA/RA.
+copy /opt/ca/completed/nist/anchors/bad.nist.gov/bad.nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 20:00:03.523557. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/bad.nist.gov.crl
+A CRL was created for the Trust Anchor bad.nist.gov
+copy /opt/ca/completed/acv/anchors/example.com/example.com.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 20:00:03.619556. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/example.com.crl
+A CRL was created for the Trust Anchor example.com
+copy /opt/ca/completed/nist/anchors/nist.gov/nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 20:00:03.837496. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/nist.gov.crl
+A CRL was created for the Trust Anchor nist.gov
+Upload failed @ %s
+A CRL was created for the CA/RA.
+copy /opt/ca/completed/nist/anchors/bad.nist.gov/bad.nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 22:00:04.222482. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/bad.nist.gov.crl
+A CRL was created for the Trust Anchor bad.nist.gov
+copy /opt/ca/completed/acv/anchors/example.com/example.com.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 22:00:04.341985. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/example.com.crl
+A CRL was created for the Trust Anchor example.com
+copy /opt/ca/completed/nist/anchors/nist.gov/nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-06 22:00:04.452462. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/nist.gov.crl
+A CRL was created for the Trust Anchor nist.gov
+Upload failed @ %s
+A CRL was created for the CA/RA.
+copy /opt/ca/completed/nist/anchors/bad.nist.gov/bad.nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-07 00:00:02.990638. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/bad.nist.gov.crl
+A CRL was created for the Trust Anchor bad.nist.gov
+copy /opt/ca/completed/acv/anchors/example.com/example.com.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-07 00:00:03.108859. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/example.com.crl
+A CRL was created for the Trust Anchor example.com
+copy /opt/ca/completed/nist/anchors/nist.gov/nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-07 00:00:03.202904. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/nist.gov.crl
+A CRL was created for the Trust Anchor nist.gov
+Upload failed @ %s
+A CRL was created for the CA/RA.
+copy /opt/ca/completed/nist/anchors/bad.nist.gov/bad.nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-07 02:00:03.836769. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/bad.nist.gov.crl
+A CRL was created for the Trust Anchor bad.nist.gov
+copy /opt/ca/completed/acv/anchors/example.com/example.com.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-07 02:00:04.018353. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/example.com.crl
+A CRL was created for the Trust Anchor example.com
+copy /opt/ca/completed/nist/anchors/nist.gov/nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-07 02:00:04.212330. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/nist.gov.crl
+A CRL was created for the Trust Anchor nist.gov
+Upload failed @ %s
+A CRL was created for the CA/RA.
+copy /opt/ca/completed/nist/anchors/bad.nist.gov/bad.nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-07 04:00:05.101806. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/bad.nist.gov.crl
+A CRL was created for the Trust Anchor bad.nist.gov
+copy /opt/ca/completed/acv/anchors/example.com/example.com.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-07 04:00:05.202809. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/example.com.crl
+A CRL was created for the Trust Anchor example.com
+copy /opt/ca/completed/nist/anchors/nist.gov/nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-07 04:00:05.282113. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/nist.gov.crl
+A CRL was created for the Trust Anchor nist.gov
+Upload failed @ %s
+A CRL was created for the CA/RA.
+copy /opt/ca/completed/nist/anchors/bad.nist.gov/bad.nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-07 06:00:03.825058. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/bad.nist.gov.crl
+A CRL was created for the Trust Anchor bad.nist.gov
+copy /opt/ca/completed/acv/anchors/example.com/example.com.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-07 06:00:03.919652. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/example.com.crl
+A CRL was created for the Trust Anchor example.com
+copy /opt/ca/completed/nist/anchors/nist.gov/nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-07 06:00:04.129399. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/nist.gov.crl
+A CRL was created for the Trust Anchor nist.gov
+Upload failed @ %s
+A CRL was created for the CA/RA.
+copy /opt/ca/completed/nist/anchors/bad.nist.gov/bad.nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-07 08:00:04.827000. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/bad.nist.gov.crl
+A CRL was created for the Trust Anchor bad.nist.gov
+copy /opt/ca/completed/acv/anchors/example.com/example.com.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-07 08:00:04.963840. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/example.com.crl
+A CRL was created for the Trust Anchor example.com
+copy /opt/ca/completed/nist/anchors/nist.gov/nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-07 08:00:05.069132. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/nist.gov.crl
+A CRL was created for the Trust Anchor nist.gov
+Upload failed @ %s
+A CRL was created for the CA/RA.
+copy /opt/ca/completed/nist/anchors/bad.nist.gov/bad.nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-07 10:00:04.090312. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/bad.nist.gov.crl
+A CRL was created for the Trust Anchor bad.nist.gov
+copy /opt/ca/completed/acv/anchors/example.com/example.com.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-07 10:00:04.466467. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/example.com.crl
+A CRL was created for the Trust Anchor example.com
+copy /opt/ca/completed/nist/anchors/nist.gov/nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-07 10:00:04.821192. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/nist.gov.crl
+A CRL was created for the Trust Anchor nist.gov
+Upload failed @ %s
+A CRL was created for the CA/RA.
+copy /opt/ca/completed/nist/anchors/bad.nist.gov/bad.nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-07 12:00:03.846424. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/bad.nist.gov.crl
+A CRL was created for the Trust Anchor bad.nist.gov
+copy /opt/ca/completed/acv/anchors/example.com/example.com.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-07 12:00:03.955931. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/example.com.crl
+A CRL was created for the Trust Anchor example.com
+copy /opt/ca/completed/nist/anchors/nist.gov/nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-07 12:00:04.053724. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/nist.gov.crl
+A CRL was created for the Trust Anchor nist.gov
+Upload failed @ %s
+A CRL was created for the CA/RA.
+copy /opt/ca/completed/nist/anchors/bad.nist.gov/bad.nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-07 14:00:16.636754. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/bad.nist.gov.crl
+A CRL was created for the Trust Anchor bad.nist.gov
+copy /opt/ca/completed/acv/anchors/example.com/example.com.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-07 14:00:17.131219. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/example.com.crl
+A CRL was created for the Trust Anchor example.com
+copy /opt/ca/completed/nist/anchors/nist.gov/nist.gov.crl /opt/django-apps/vcert/vcert/../sitestatic/crl
+Completed upload @ 2014-04-07 14:00:17.433384. Archive URL = /opt/django-apps/vcert/vcert/../sitestatic/crl/nist.gov.crl
+A CRL was created for the Trust Anchor nist.gov

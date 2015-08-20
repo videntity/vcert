@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load markup %}
+
+{% block content %}
+
+
+  <div class="container">
+    <div class="hero-unit">
+    <h1>{% trans "RESTFul Certificate Discovery" %}</h1>
+  <br>
+    
+    <div class="row">
+    <div class="span7 center">
+     Here are the API details
+     
+    
+    {{ md|markdown }} 
+     
+    </div>
+  </div>
+
+<div class="row">
+ <small>
+ Looking for DirectCA's root certificate authority information?
+<a href="http://directca.org" target="_blank">{% trans "Get that here." %}</a>
+ </small>
+
+    </div> 
+
+    
+{% endblock %}
+

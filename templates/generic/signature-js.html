@@ -1,0 +1,10 @@
+<script src="{{ STATIC_URL }}js/lib/vendor/signature-pad/jquery.signaturepad.min.js"></script>
+<script type="text/javascript">
+    $(function() {
+        $('.sigPad').signaturePad({
+            drawOnly : true,
+            clear    :'.sigpad-clear'
+        });
+    });
+</script>
+<script src="{{ STATIC_URL }}js/lib/utils/json2.min.js"></script>

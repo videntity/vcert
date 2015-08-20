@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	{% load i18n %}
+        <title>
+        {% block pretitle %}{%  endblock %}
+        {% block title %} {{global_title}} {% endblock %}
+        </title>
+	
+    {% block head %}
+        {% include "include/head.html" %}
+    {% endblock %}
+
+    {% block extra_head %}
+    {% endblock %}
+    
+
+</head>
+<body>
+      
+        {% include "include/top-nav.html" %}
+     
+         <div id="messages">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{message.tags}}">
+            <a class="close" data-dismiss="alert">×</a>
+            {{message}}
+          </div>
+        {% endfor %}
+      {% endif %}
+    </div>
+       
+               <div class="container">
+      
+      {% block content %}
+        {% if template %}{% include template %}{% endif %}
+        {{ content|safe }}
+      {% endblock %}
+    </div>
+                        
+        {% include "include/footer.html" %}
+
+</body>
+
+</html>

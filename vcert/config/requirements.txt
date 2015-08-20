@@ -1,0 +1,9 @@
+boto
+django-ses
+markdown
+Django==1.8.3
+django-extensions
+twilio
+django-bootstrap-form
+pyOpenSSL
+django-localflavor
