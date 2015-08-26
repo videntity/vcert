@@ -150,13 +150,17 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-     'bootstrapform',
+     
     # Uncomment the next line to enable the admin:
     'django.contrib.admin',
+    
+    #This project
     'apps.accounts',
     'apps.certificates',
     'apps.home',
-    
+    #3rd party
+    'django_extensions',
+    'bootstrapform',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
 )
@@ -199,7 +203,7 @@ EMAIL_BACKEND = 'django_ses.SESBackend'
 AWS_ACCESS_KEY_ID = ''
 AWS_SECRET_ACCESS_KEY = ''
 
-# Default S3 bucket for filwe upload utility.
+# Default S3 bucket for file upload utility.
 AWS_BUCKET =''
 
 # Twilio is not yet supported, but these are added for future multi-factor
@@ -239,8 +243,8 @@ CA_PUBLIC_CERT    = os.path.join( CA_BASE_DIR, 'public/', "sampleca.example.com.
 CA_MAIN_CONF      = os.path.join( CA_CONF_DIR , "sampleca.example.com.cnf")
 
 
-
-
+AIA_FOR_TRUST_ANCHORS = "http://sampleca.example.com/aia/sampleca.example.com.der"
+INVALID_AIA_URL = "http://example.com/foo.der" #For endpoints
 # The S3 bucket for the certificate revocation lists.  This "webserver" is
 # used by all trust anchors.
 CRL_BUCKET          = "ca.example.com"
@@ -261,7 +265,7 @@ RCSP_BUCKET         = "rcsp.example.com"
 RCSPSHA1_BUCKET     = "rcspsha1.example.com"
 
 
-TEMPLATE_CONTEXT_PROCESSORS =( 'django.contrib.auth.context_processors.auth',
+TEMPLATE_CONTEXT_PROCESSORS =('django.contrib.auth.context_processors.auth',
                 'django.template.context_processors.debug',
                 'django.template.context_processors.i18n',
                 'django.template.context_processors.media',

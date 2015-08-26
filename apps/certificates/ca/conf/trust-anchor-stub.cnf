@@ -22,6 +22,7 @@ basicConstraints        = critical, CA:true
 keyUsage                = critical, keyCertSign, cRLSign
 crlDistributionPoints   = URI:http://sampleca.nist.gov/crl/sampleca.nist.gov.crl
 
+
 [alt_names]
 DNS.1                   = sampleca.nist.gov
 
@@ -60,6 +61,7 @@ subjectKeyIdentifier    = hash
 authorityKeyIdentifier  = keyid ,issuer:always
 keyUsage                = digitalSignature, keyCertSign, cRLSign
 crlDistributionPoints   = URI:http://sampleca.nist.gov/crl/sampleca.nist.gov.crl
+authorityInfoAccess     = caIssuers;URI:|AIA_FOR_TRUST_ANCHORS|
 
 [ crl_ext ]
 authorityKeyIdentifier  = keyid:always,issuer:always

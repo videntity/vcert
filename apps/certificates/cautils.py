@@ -177,13 +177,15 @@ def revoke_from_anchor(cert):
 def create_trust_anchor_certificate(common_name     = "example.com",
                                     email           = "example.com",
                                     dns             = "example.com",
-                                    expires         = 1095,
-                                    organization    = "NIST",
+                                    expires         = 730,
+                                    organization    = "ACME",
                                     city            = "Gaithersburg",
                                     state           = "MD",
                                     country         = "US",
                                     rsakey          = 2048,
-                                    user            = "alan",):
+                                    user            = "alan",
+                                    aia_url         = settings.AIA_FOR_TRUST_ANCHORS,
+                                    include_aia     = True ):
     #a  dict for all the things we want to return
     result = {  "sha256_digest":                      "",
                 "anchor_zip_download_file_name":      "",
@@ -258,6 +260,10 @@ def create_trust_anchor_certificate(common_name     = "example.com",
     sedcommon_name =  "s#|COMMON_NAME|#%s#g" % (common_name)
     sedorganization = "s#|ORGANIZATION|#%s#g" % (organization)
     sedemail = "s#|EMAIL_ADDRESS|#%s#g" % (email)
+    if include_aia:
+        sedaia = "s#|AIA_FOR_TRUST_ANCHORS|#%s#g" % (aia_url)
+    else:
+        sedaia = "s#|AIA_FOR_TRUST_ANCHORS|#%s#g" % (settings.INVALID_AIA_URL)
     
     
     #Apply the sed operations --------------------------------------------------- 
@@ -308,6 +314,11 @@ def create_trust_anchor_certificate(common_name     = "example.com",
                                         stderr= subprocess.PIPE
                                         ).communicate()
     
+    error, output = subprocess.Popen(["sed", "-i", "-e", sedaia,
+                                      conf_stub_file_name],
+                                        stdout=subprocess.PIPE,
+                                        stderr= subprocess.PIPE
+                                        ).communicate()
     
     
     
@@ -452,10 +463,10 @@ def create_trust_anchor_certificate(common_name     = "example.com",
     
 
 
-def create_endpoint_certificate(common_name     = "foo.bar.org",
-                                    email           = "foo.bar.org",
-                                    dns             = "foo.bar.org",
-                                    anchor_dns      = "bar.org",
+def create_endpoint_certificate(common_name     = "foo.example.com",
+                                    email           = "foo.example.com",
+                                    dns             = "foo.example.com",
+                                    anchor_dns      = "example.com",
                                     expires         = 730,
                                     organization    = "NIST",
                                     city            = "Gaithersburg",
@@ -466,7 +477,8 @@ def create_endpoint_certificate(common_name     = "foo.bar.org",
                                     user            = "",
                                     private_key_path = "",
                                     public_key_path  = "",
-                                    completed_anchor_dir = ""):
+                                    completed_anchor_dir = "",
+                                    include_aia = True):
     
     result = {  "sha256_digest":                      "",
                 "anchor_zip_download_file_name":      "",
@@ -553,7 +565,11 @@ def create_endpoint_certificate(common_name     = "foo.bar.org",
     sedcommon_name =  "s#|COMMON_NAME|#%s#g" % (common_name)
     sedorganization = "s#|ORGANIZATION|#%s#g" % (organization)
     sedemail = "s#|EMAIL_ADDRESS|#%s#g" % (email)
-    sedaia = "s#|AIA-DER|#%s#g" % (aia_der)
+    
+    if include_aia:
+        sedaia = "s#|AIA-DER|#%s#g" % (aia_der)
+    else:
+        sedaia = "s#|AIA-DER|#%s#g" % (settings.INVALID_AIA_URL)
 
     error, output = subprocess.Popen(["sed", "-i", "-e", sedcompletedanchordir,
                                       conf_stub_file_name],
