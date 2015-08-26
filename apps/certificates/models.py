@@ -61,6 +61,8 @@ class TrustAnchorCertificate(models.Model):
                             help_text="No slashes. Letters, numbers, and dashes are okay. ")
     organization        = models.CharField(max_length=64,
                             help_text="No slashes. Letters, numbers, and dashes are okay. ")
+    
+    include_aia         = models.BooleanField(default=True, blank=True, verbose_name= "Include AIA")
     private_key_path    = models.CharField(max_length=1024, default="",
                                         blank=True)
     public_key_path     = models.CharField(max_length=1024, default="",
@@ -150,7 +152,8 @@ class TrustAnchorCertificate(models.Model):
                                         state           = self.state,
                                         country         = self.country,
                                         rsakey          = self.rsa_keysize,
-                                        user            = self.owner.username)
+                                        user            = self.owner.username,
+                                        include_aia     = self.include_aia)
             
             self.sha256_digest      = result['sha256_digest']
             self.serial_number      = result['serial_number']
@@ -620,6 +623,8 @@ class DomainBoundCertificate(models.Model):
                                                    help_text="Letters, numbers, and dashes okay. No slashes")
     organization                = models.CharField(max_length=64,
                                                    help_text="Letters, numbers, and dashes okay. No slashes")
+    include_aia         = models.BooleanField(default=True, blank=True, verbose_name= "Include AIA")
+    
     completed_dir_path          = models.CharField(max_length=1024, default="",
                                         blank=True)
     public_key_path             = models.CharField(max_length=1024, default="",
@@ -725,8 +730,8 @@ class DomainBoundCertificate(models.Model):
                         user                = self.trust_anchor.owner.username,
                         public_key_path     = self.trust_anchor.public_key_path,
                         private_key_path    = self.trust_anchor.private_key_path,
-                        completed_anchor_dir = self.trust_anchor.completed_dir_path
-                        )
+                        completed_anchor_dir= self.trust_anchor.completed_dir_path,
+                        include_aia         = self.include_aia)
             
             
             sha256_digest           = result['sha256_digest']

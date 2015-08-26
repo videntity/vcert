@@ -18,9 +18,10 @@ class TrustAnchorCertificateForm(ModelForm):
     class Meta:
         model = TrustAnchorCertificate
         fields = ('email','dns', 'rsa_keysize', 'organization','city', 'state',
-                   'expire_days','contact_first_name',
+                   'expire_days', 'include_aia', 'contact_first_name',
                   'contact_last_name', 'contact_email', 'contact_mobile_phone',
                   'contact_land_phone', 'contact_fax','npi',)
+   
     required_css_class = 'required'
     
     def clean_email(self):
@@ -75,9 +76,10 @@ class DomainBoundCertificateForm(ModelForm):
     class Meta:
         model = DomainBoundCertificate
         fields = ('email', 'dns', 'rsa_keysize', 'organization','city', 'state', 
-                  'expire_days', 'contact_first_name', 'contact_last_name',
+                  'expire_days', 'include_aia', 'contact_first_name', 'contact_last_name',
                   'contact_email', 'contact_mobile_phone', 'contact_land_phone',
                   'contact_fax','npi',)
+   
     required_css_class = 'required'
     
     def clean_email(self):
