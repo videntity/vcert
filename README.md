@@ -3,9 +3,11 @@ README
 
 `vcert`  A web-based certificate authority mangement system built atop OpenSSL.
 
+Open Source License: MPL See LICENSE.txt
+
 Copyright Alan Viars 2013-2015
 
-Open Source License: MPL See LICENSE.txt
+
 
 About
 -----
@@ -131,9 +133,9 @@ Create and/or install the root CA's (or subordinate certificate's) private
 certificate and change settings_local.py accordingly.  Here is how to generate a
 new CA keypair with a password on the pricate key.  It assumes the domain
 `ca.example.com` and uses the configuration file
-`/opt/ca/conf/ca.example.com.cnf`. Before this next step,  you will likely want
+`/opt/ca/conf/ca.example.com.cnf`. Before this next step,  You will likely want
 to make adjustment there such the changing "example.com" to your domain, setting
-organizational name, city, state, and so on.  Here are the stes.
+organizational name, city, state, and so on.  Here are the steps:
 
 
     cd /opt/ca
@@ -181,7 +183,7 @@ Now you can run the `vcert` in development mode:
 Production Deployment
 ---------------------
 
-The convention is to deploy `vcert` on server named `console` (e.g. `console.example.com`). 
+The convention is to deploy `vcert` on server named `caconsole` (e.g. `caconsole.example.com`). 
 Please refer to Django's documentation for more information on deploying Django
 https://docs.djangoproject.com/en/dev/howto/deployment/
     
@@ -194,10 +196,12 @@ Security
 has a number of security features that 'vcert' uses. It is recommended that you
 use a unique `SECRET_KEY` and that you host the service on HTTPS using a valid
 certificate.  User authentication is accomplished via django's standard `auth`
-which uses salted and hashed passwords.
+which uses salted and hashed passwords. Use up to date OpenSSL software.
 
 In order to enable a user to act as an administraor (i.e. verify/approve
-certificates) you need to give access to the Django admin to said user. 
+certificates) you need to give set the user's `is_staff` flag to `True`.
+
+There are other configuration via the `admin`.
 (`http://127.0.0.1:8000/admin` in a development
 configuration). You can so this in two ways:
 
