@@ -1,7 +1,0 @@
-{
-    "SerialNumber": "29", 
-    "CommonName": "foo.fab.co", 
-    "CertStatus": "revoked", 
-    "CertSHA1Fingerprint": "69:2F:85:C2:C0:5E:F9:52:39:87:C3:82:DB:C5:DB:FA:6B:9F:9D:82", 
-    "ThisUpdate": "2015-08-20 14:03:24.690148"
-}

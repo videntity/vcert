@@ -1,5 +1,5 @@
 [ req ]
-default_bits            = 4096
+default_bits            = 2048
 default_keyfile         = |PRIVATE_KEY|
 default_md              = sha256
 prompt                  = no
@@ -18,12 +18,12 @@ commonName              = |COMMON_NAME|
 subjectKeyIdentifier    = hash
 subjectAltName          = @alt_names
 authorityKeyIdentifier  = keyid:always,issuer:always
-basicConstraints        = critical, CA:true
+basicConstraints        = CA:true
 keyUsage                = keyCertSign, cRLSign
-crlDistributionPoints   = URI:http://sampleca.nist.gov/crl/example-crl.pem
+crlDistributionPoints   = URI:http://ca.directca.org/crl/ca.directca.org.crl
 
 [alt_names]
-DNS.1                   = sampleca.nist.gov
+DNS.1                   = ca.directca.org
 
 [ ca ]
 default_ca              = CA_default
@@ -38,7 +38,7 @@ private_key             = |PRIVATE_KEY|
 x509_extensions         = usr_cert
 name_opt                = ca_default
 cert_opt                = ca_default
-default_crl_days        = 30
+default_crl_days        = 1
 default_days            = |DAYS|
 default_md              = sha256
 preserve                = no
@@ -59,8 +59,8 @@ subjectAltName          = DNS: |DNS|
 subjectKeyIdentifier    = hash
 authorityKeyIdentifier  = keyid:always #, issuer:always
 keyUsage                = digitalSignature, keyEncipherment
-crlDistributionPoints   = URI:http://sampleca.nist.gov/crl/|ANCHORDNS|.crl
+crlDistributionPoints   = URI:http://ca.directca.org/crl/|ANCHORDNS|.crl
 authorityInfoAccess     = caIssuers;URI:|AIA-DER|
 
-[ crl_ext ]
-authorityKeyIdentifier  = keyid:always,issuer:always
+#[ crl_ext ]
+#authorityKeyIdentifier  = keyid:always,issuer:always

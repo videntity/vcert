@@ -19,8 +19,7 @@ class TrustAnchorCertificateForm(ModelForm):
         model = TrustAnchorCertificate
         fields = ('email','dns', 'rsa_keysize', 'organization','city', 'state',
                    'expire_days', 'include_aia', 'contact_first_name',
-                  'contact_last_name', 'contact_email', 'contact_mobile_phone',
-                  'contact_land_phone', 'contact_fax','npi',)
+                  'contact_last_name', 'contact_email',)
    
     required_css_class = 'required'
     
@@ -41,10 +40,6 @@ class TrustAnchorCertificateForm(ModelForm):
         if anchors or endpoints:
             raise forms.ValidationError(_('A certifcate was already created with this DNS. It must be revoked before continuing.'))
         return dns
-        
-        
-        
-        
         
         
         
@@ -77,8 +72,7 @@ class DomainBoundCertificateForm(ModelForm):
         model = DomainBoundCertificate
         fields = ('email', 'dns', 'rsa_keysize', 'organization','city', 'state', 
                   'expire_days', 'include_aia', 'contact_first_name', 'contact_last_name',
-                  'contact_email', 'contact_mobile_phone', 'contact_land_phone',
-                  'contact_fax','npi',)
+                  'contact_email')
    
     required_css_class = 'required'
     

@@ -27,7 +27,7 @@ STATUS_CHOICES = (  ('incomplete','incomplete'),
                     ('revoked','revoked'))
 
 
-EXPIRE_CHOICES = ((1,"1 Day"),(365,"1 Year"),(730,"2 Years"))
+EXPIRE_CHOICES = ((1,"1 Day"),(365,"1 Year"),(730,"2 Years"), (3650,"10 Years"))
 
 class TrustAnchorCertificate(models.Model):
 
@@ -122,7 +122,7 @@ class TrustAnchorCertificate(models.Model):
     contact_land_phone      = PhoneNumberField(max_length = 15, blank = True)
     contact_fax             = PhoneNumberField(max_length = 15, blank = True)
     expiration_date         = models.DateField(blank=True, editable=False)
-    expire_days             = models.IntegerField(default=730,
+    expire_days             = models.IntegerField(default=3650,
                                                   choices = EXPIRE_CHOICES)
     creation_date           = models.DateField(auto_now_add=True)
     

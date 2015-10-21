@@ -1,6 +1,6 @@
 [ req ]
 default_bits            = 4096
-default_keyfile         = /opt/ca/private/sampleca.nist.govKey.pem
+default_keyfile         = /opt/ca/private/ca.directca.orgKey.pem
 default_md              = sha256
 prompt                  = no
 distinguished_name      = sub_ca_distinguished_name
@@ -20,11 +20,11 @@ subjectAltName          = @alt_names
 authorityKeyIdentifier  = keyid:always,issuer:always
 basicConstraints        = critical, CA:true
 keyUsage                = critical, keyCertSign, cRLSign
-crlDistributionPoints   = URI:http://sampleca.nist.gov/crl/sampleca.nist.gov.crl
+crlDistributionPoints   = URI:http://ca.directca.org/crl/ca.directca.org.crl
 
 
 [alt_names]
-DNS.1                   = sampleca.nist.gov
+DNS.1                   = ca.directca.org
 
 [ ca ]
 default_ca              = CA_default
@@ -33,9 +33,9 @@ default_ca              = CA_default
 dir                     = .
 new_certs_dir           = /opt/ca/signed-keys/
 database                = /opt/ca/conf/index
-certificate             = /opt/ca/public/sampleca.nist.gov.pem
+certificate             = /opt/ca/public/ca.directca.org.pem
 serial                  = /opt/ca/conf/serial
-private_key             = /opt/ca/private/sampleca.nist.govKey.pem
+private_key             = /opt/ca/private/ca.directca.orgKey.pem
 x509_extensions         = usr_cert
 name_opt                = ca_default
 cert_opt                = ca_default
@@ -55,12 +55,11 @@ commonName              = supplied
 emailAddress            = supplied
 
 [ usr_cert ]
-basicConstraints        = critical, CA:true
-subjectAltName          = DNS: |DNS|
+basicConstraints        = CA:true
 subjectKeyIdentifier    = hash
 authorityKeyIdentifier  = keyid ,issuer:always
 keyUsage                = digitalSignature, keyCertSign, cRLSign
-crlDistributionPoints   = URI:http://sampleca.nist.gov/crl/sampleca.nist.gov.crl
+crlDistributionPoints   = URI:http://ca.directca.org/crl/ca.directca.org.crl
 authorityInfoAccess     = caIssuers;URI:|AIA_FOR_TRUST_ANCHORS|
 
 [ crl_ext ]
