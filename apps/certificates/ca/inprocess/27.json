@@ -1,7 +1,0 @@
-{
-    "SerialNumber": "27", 
-    "CommonName": "direct.foo.bar", 
-    "CertStatus": "revoked", 
-    "CertSHA1Fingerprint": "76:07:EA:F5:1D:C3:3F:14:BF:4A:F1:EB:0F:7F:C9:FE:D1:C4:E4:C7", 
-    "ThisUpdate": "2015-08-20 13:49:47.346193"
-}

@@ -73,13 +73,11 @@ def write_x5c_message(name, x5ckeys):
 
 
 
-
-
 def build_crl():
     url = ""
     password = "pass:" + settings.PRIVATE_PASSWORD
     crl_file = os.path.join(settings.CA_CRL_DIR, settings.CRL_FILENAME)
-    call(["openssl", "ca", "-config",  settings.CA_MAIN_CONF ,  "-gencrl", "-out",
+    call(["openssl", "ca", "-config",  settings.CA_MAIN_CONF ,  "-crlexts", "crl_ext", "-gencrl", "-out",
           crl_file, "-passin", password])
     
     if "S3" in settings.CA_PUBLICATION_OPTIONS:
@@ -105,13 +103,15 @@ def build_crl():
     return url
 
 
+
+
 def build_anchor_crl(trust_anchor):
     url = ""
     config_file = "%s-crl-stub.cnf" % (trust_anchor.dns)
     crl_file = "%s.crl" % (trust_anchor.dns)
     crl_path = os.path.join(trust_anchor.completed_dir_path, crl_file)
     crl_conf = os.path.join(trust_anchor.completed_dir_path, config_file)
-    call(["openssl", "ca", "-config",  crl_conf,  "-gencrl", "-out", crl_path,])
+    call(["openssl", "ca", "-config",  crl_conf,  "-gencrl", "-crlexts", "crl_ext", "-out", crl_path,])
     
     if "S3" in settings.CA_PUBLICATION_OPTIONS:
         s=SimpleS3()
@@ -815,22 +815,6 @@ def create_endpoint_certificate(common_name     = "foo.example.com",
     os.chdir(settings.BASE_DIR) 
 
     return result
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

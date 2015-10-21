@@ -3,7 +3,6 @@ from django import forms
 from  models import *
 #from django.contrib.admin import widgets
 from django.contrib.auth.models import User
-from django.forms.utils import ErrorList
 from localflavor.us.models import PhoneNumberField
 from localflavor.us.us_states import US_STATES
 from django.conf import settings

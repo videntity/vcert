@@ -8,7 +8,6 @@ apps/certificates/ca/conf/index*
 apps/certificates/ca/conf/serial*
 apps/certificates/ca/conf/serial
 *.csr
-apps/certificates/ca/videntity/*
 apps/certificates/ca/inprocess/anchors/*
 apps/certificates/ca/inprocess/domain-bound/*
 apps/certificates/ca/completed/*
@@ -19,7 +18,8 @@ vcert/settings_local.py
 apps/certificates/ca/crl/
 .idea/
 apps/certificates/ca/tmp/
-ca.directca.org.cnf
+apps/certificates/ca/public/ca.directca.org.der
+apps/certificates/ca/public/ca.directca.org.pem
 ca.example.com.pem
 *.komodoproject
 sitestatic/aia

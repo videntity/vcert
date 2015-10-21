@@ -1,30 +1,27 @@
 [ req ]
-default_bits            = 4096
-default_keyfile         = /opt/ca/private/sampleca.nist.govKey.pem
+default_bits            = 2048
+default_keyfile         = /opt/ca/private/ca.directca.orgKey.pem
 default_md              = sha256
 prompt                  = no
 distinguished_name      = root_ca_distinguished_name
 x509_extensions         = v3_ca
+default_days            = 3650
 
 [ root_ca_distinguished_name ]
 countryName             = US
-stateOrProvinceName     = Maryland
-localityName            = Gaithersburg
-0.organizationName      = Sample CA for NIST - For Testing Only
-commonName              = sampleca.nist.gov
-emailAddress            = alan.viars@nist.gov
+stateOrProvinceName     = North Carolina
+localityName            = Durham
+0.organizationName      = Sample CA for DirectCA - For Testing Only
+commonName              = ca.directca.org
+emailAddress            = sales@videntity.com
 
 [ v3_ca ]
 subjectKeyIdentifier    = hash
-subjectAltName          = @alt_names
 authorityKeyIdentifier  = keyid:always,issuer:always
 basicConstraints        = critical, CA:true
 keyUsage                = critical, keyCertSign, cRLSign
-crlDistributionPoints   = URI:http://sampleca.nist.gov/crl/sampleca.nist.gov.crl
+crlDistributionPoints   = URI:http://ca.directca.org/crl/ca.directca.org.crl
 
-
-[alt_names]
-DNS.1                   = sampleca.nist.gov
 
 [ ca ]
 default_ca              = CA_default
@@ -33,14 +30,16 @@ default_ca              = CA_default
 dir                     = .
 new_certs_dir           = /opt/ca/signed-keys/
 database                = /opt/ca/conf/index
-certificate             = /opt/ca/public/sampleca.nist.gov.pem
+certificate             = /opt/ca/public/ca.directca.org.pem
 serial                  = /opt/ca/conf/serial
-private_key             = /opt/ca/private/sampleca.nist.govKey.pem
+private_key             = /opt/ca/private/ca.directca.orgKey.pem
 x509_extensions         = usr_cert
 name_opt                = ca_default
 cert_opt                = ca_default
 default_crl_days        = 01
-default_days            = 365
+default_days            = 3650
+
+
 default_md              = sha256
 preserve                = no
 policy                  = policy_match
@@ -61,10 +60,11 @@ subjectKeyIdentifier    = hash
 authorityKeyIdentifier  = keyid,issuer:always
 keyUsage                = keyCertSign, cRLSign
 subjectAltName          = DNS: |DNS|
-crlDistributionPoints   = URI:http://sampleca.nist.gov/crl/sampleca.nist.gov.crl
+crlDistributionPoints   = URI:http://ca.directca.org/crl/ca.directca.org.crl
 serial                  = /opt/ca/conf/serial
 
 
 [ crl_ext ]
 authorityKeyIdentifier   = keyid:always,issuer:always
+
 

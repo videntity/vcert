@@ -2,12 +2,13 @@
 
 import os
 from django.utils.translation import ugettext_lazy as _
+from django.conf import global_settings
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
-    ('You', 'you@eample.com'),
+    ('You', 'you@example.com'),
 )
 
 MANAGERS = ADMINS
@@ -213,7 +214,7 @@ AWS_BUCKET =''
 #Org  and CA Settings -----------------------------------------------------
 ORGANIZATION_NAME = "Sample-CA"
 
-LOCATION_NAME = "Durham, NC"
+LOCATION_NAME = "Anywhere, USA"
 GLOBAL_TITLE = "caconsole.example.com"
 CA_VERIFIER_EMAIL = "verifier@example.com"
 
@@ -265,16 +266,7 @@ RCSP_BUCKET         = "rcsp.example.com"
 RCSPSHA1_BUCKET     = "rcspsha1.example.com"
 
 
-TEMPLATE_CONTEXT_PROCESSORS =('django.contrib.auth.context_processors.auth',
-                'django.template.context_processors.debug',
-                'django.template.context_processors.i18n',
-                'django.template.context_processors.media',
-                'django.template.context_processors.static',
-                'django.template.context_processors.tz',
-                'django.contrib.messages.context_processors.messages',
-                'apps.context_processors.global_title',
-                )
-
+TEMPLATE_CONTEXT_PROCESSORS = global_settings.TEMPLATE_CONTEXT_PROCESSORS + ('apps.context_processors.global_title',)
 
 
 # To enable you local settings create or copy the example
