@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% load i18n %}
+
+
+<div class="container">
+      <div class="row">
+              <a class="btn pull-right btn-primary btn-large" href="/certificates/create-trust-anchor">
+                <i class="icon-plus-sign icon-white"></i> {% trans "Create a Trust Anchor" %}
+                    </a>
+              <h1>{{ta.common_name}}</h1>
+      </div>
+</div>
+
+
+<table class="table">
+   
+
+<thead>
+<tr>
+<th>Email/DNS</th>
+<th>Category</th>
+<th>Details</th>
+<th>Downloads</th>
+<th>Actions</th>
+</tr>
+</thead>
+ 
+<tbody>
+
+
+{% for a in  active_cert_list %}
+
+<tr class="success">
+<td>{{a.trust_anchor.email}}</td>
+
+<td>Anchor</td>
+{% if a.trust_anchor.status == "good" %}
+
+<td>  
+
+<strong>SHA1 Fingerprint:</strong><br>
+                   {{ a.trust_anchor.sha1_fingerprint|slice:":30" }} <br>
+                   {{ a.trust_anchor.sha1_fingerprint|slice:"30:" }}<br>
+<strong>Serial Number:</strong>    {{ a.trust_anchor.serial_number }} <br>
+<strong>Created:</strong> {{a.trust_anchor.creation_date}} <br>
+<strong>Expires:</strong> {{a.trust_anchor.expiration_date}}<br>
+<strong>Status:</strong>  <a target="_blank"  href="{{a.trust_anchor.public_cert_status_url}}">
+{{a.trust_anchor.status}}</a> |
+<a target="_blank"  href="{{a.trust_anchor.public_cert_status_sha1_url}}">
+sha1-digest</a>
+
+<br>
+</td>
+
+
+<td>
+   
+  <strong> Public:</strong>
+   <a target="_blank" href="{{a.trust_anchor.public_cert_der_url}}">der </a>|
+   <a target="_blank" href="{{a.trust_anchor.public_cert_pem_url}}">pem </a>|
+   <a target="_blank" href="{{a.trust_anchor.public_cert_x5c_url}}">json</a><br>
+ 
+</td>
+
+
+<td>
+  <a class="btn btn-success btn-small btn-block"
+     href="/certificates/create-domain-bound/{{a.trust_anchor.serial_number}}">
+    <i class="icon-plus-sign icon-white"></i> Create an Endpoint Certificate</a>
+  
+   <a class="btn btn-danger btn-small btn-block"
+      href="/certificates/revoke-trust-anchor/{{a.trust_anchor.serial_number}}">
+    <i class="icon-trash icon-white"></i> 
+    Revoke Self & Children</a>
+</td>
+
+   {% else %}
+     <td><em>Verifiction in progress.</em></td>
+     <td><em>Verifiction in progress.</em></td>
+     <td>
+       {% if user.is_staff %}
+			 <a class="btn btn-warning btn-small btn-block"
+           href="/certificates/verify-trust-anchor/{{a.trust_anchor.serial_number}}">
+        <i class="icon-ok-sign icon-white"></i> 
+        Self-Verify</a>
+      {% else %}
+            <em>Verifiction in progress.</em>
+      {% endif %}
+      
+      
+     </td>
+   
+   
+   {% endif %}
+  
+
+</tr>
+
+  {% for d in a.domain_bounds %}
+  <tr class="info">
+  
+  <td>{{d.email}} <br>Anchor = Serial {{d.trust_anchor.serial_number}}</td>
+  
+  <td>Endpoint</td>
+  {% if d.status == "good" %}
+  <td>
+    <strong>SHA1 Fingerprint:</strong> <br>
+      {{d.sha1_fingerprint|slice:":30"}} <br>
+      {{d.sha1_fingerprint|slice:"30:"}}<br>
+  
+   <strong>Serial Number:</strong>  {{d.serial_number}}<br>
+   <strong>Created:</strong>   {{d.creation_date}}<br>
+   <strong>Expires:</strong>  {{d.expiration_date}}<br>
+   <strong>Status:</strong>  <a target="_blank"  href="{{d.public_cert_status_url}}">
+{{d.status}}</a> |
+<a target="_blank"  href="{{d.public_cert_status_sha1_url}}">sha1-digest</a>
+ 
+  <td>
+    
+    
+ <strong>Public:</strong>
+      <a  target="_blank" href="{{d.public_cert_der_url}}">der </a>|
+      <a  target="_blank" href="{{d.public_cert_pem_url}}">pem </a>|
+      <a  target="_blank" href="{{d.public_cert_x5c_url}}">json</a><br>
+  <strong>Private:</strong>
+      <a target="_blank" href="{{d.private_p12_url}}">p12 </a>| 
+      <a target="_blank" href="{{d.private_pem_url}}">pem</a>
+  </td>
+ 
+  <td>
+   
+      <a class="btn btn-danger btn-small btn-block"
+         href="/certificates/revoke-endpoint/{{d.serial_number}}">
+        <i class="icon-trash icon-white"></i> 
+        Revoke</a>
+
+    </td>
+  
+   {% else %}
+   <td><em>Verifiction in progress.</em></td>
+   <td><em>Verifiction in progress.</em></td>
+   <td>
+      {% if user.is_staff %}
+			 <a class="btn btn-warning btn-small btn-block"
+         href="/certificates/verify-endpoint/{{d.serial_number}}">
+        <i class="icon-ok-sign icon-white"></i> 
+        Self-Verify</a>
+      {% else %}
+            <em>Verifiction in progress.</em>
+      {% endif %}
+      
+      </td>
+   
+   {% endif %}
+  
+  </tr>
+  {% endfor %}
+
+{% endfor %}
+
+</tbody>
+
+    </table>
+  <p>
+    
+  </p>
+  
+<div class="container">
+            <div class="row">
+                    <h1>{% trans "Revoked" %}</h1>
+            </div>
+    </div>
+
+<table class="table">
+   
+
+<thead>
+<tr>
+<th>Email/DNS</th>
+<th>Status</th>
+<th>SHA1 Fingerprint</th>
+<th>Serial Number</th>
+<th>Created</th>
+<th>Expires</th>
+
+</tr>
+</thead>
+ 
+<tbody>
+  
+{% for c in revoked_cert_list %}
+   
+<tr class="error">
+<td>{{ c.email }}</td>
+<td><a target="_blank"  href="{{c.public_cert_status_url}}">{{ c.status }}</a> |
+<a target="_blank"  href="{{c.public_cert_status_sha1_url}}">
+sha1-digest</a>
+
+</td>
+<td>{{ c.sha1_fingerprint|slice:":30"}} <br>
+    {{c.sha1_fingerprint|slice:"30:"}}</td>
+<td>{{ c.serial_number }}</td>
+<td>{{ c.creation_date }}</td>
+<td>{{ c.expiration_date }}</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+    </table>
+</div>
+
+<div class="container">
+            <div class="row pull-right">
+Looking for DirectCA's root certificate authority information?
+<a href="http://ca.directca.org" target="_blank">{% trans "Get that here." %}</a></li> 
+
+
+    </div>
+  </div>
+  
+
+
+{% endblock %}
