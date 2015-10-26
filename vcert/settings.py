@@ -157,7 +157,6 @@ INSTALLED_APPS = (
     'apps.accounts',
     'apps.certificates',
     'apps.home',
-    'apps.genres',
     #3rd party
     'django_extensions',
     'bootstrapform',
