@@ -6,11 +6,12 @@
 from django.conf import settings
 
 def global_title(request):
-    from django.conf import settings
     return {'global_title': settings.GLOBAL_TITLE}
 
 
-
+    
+def ca_common_name(request):
+    return {'ca_common_name': settings.CA_COMMON_NAME}
 
 
 

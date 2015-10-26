@@ -18,6 +18,16 @@ import sha
 from fileutils import SimpleS3
 from django.core.mail import send_mail, EmailMessage
 from shutil import copyfile
+
+
+from mptt.models import MPTTModel, TreeForeignKey
+
+def uuid_default_common_name():
+    s = "NO-CN-%s" % (str(uuid.uuid4()))
+    return s
+
+
+
 #Note 4096 is incompatiable with Java Direct RI.
 RSA_KEYSIZE_CHOICES = ((1024,1024), (2048,2048),(4096,4096),)
 STATUS_CHOICES = (  ('incomplete','incomplete'),
@@ -29,24 +39,26 @@ STATUS_CHOICES = (  ('incomplete','incomplete'),
 
 EXPIRE_CHOICES = ((1,"1 Day"),(365,"1 Year"),(730,"2 Years"), (3650,"10 Years"))
 
-class TrustAnchorCertificate(models.Model):
+class TrustAnchorCertificate(MPTTModel):
 
     owner               = models.ForeignKey(User)
+    parent              = TreeForeignKey('self', null=True, blank=True, related_name='children', db_index=True)
+    
+    common_name         = models.CharField(max_length=512, default=uuid_default_common_name,
+                            help_text= "Always set this to the same value as domain")
+
     status              = models.CharField(max_length=10, default="incomplete",
                                          choices=STATUS_CHOICES,
                                          editable=False)
     sha256_digest       = models.CharField(max_length=64, default="", blank=True,)
     sha1_fingerprint    = models.CharField(max_length=64, default="", blank=True,)
-                                         #editable=False)
     serial_number       = models.CharField(max_length=64, default=-01, blank=True,)
-                                           #editable=False)
-                                                                               
+                   
     domain              = models.CharField(max_length=512, default="",
-                              help_text= "We recommend using a top-level domain here (e.g. example.com)")
-    common_name         = models.CharField(max_length=512, default="",
-                            help_text= "Always set this to the same value as domain")
+                              help_text= "e.g. example.com")
+
     dns                 = models.CharField(verbose_name="DNS", max_length=512, default="",
-                            help_text= """We recommend using a top-level domain here (e.g. example.com).
+                            help_text= """e.g. example.com.
                              This field should match the email field exactly.
                             """)
     email               = models.CharField(max_length=512, default="",             
@@ -55,7 +67,7 @@ class TrustAnchorCertificate(models.Model):
     rsa_keysize         = models.IntegerField(default=2048,
                                             choices= RSA_KEYSIZE_CHOICES)
     country             = models.CharField(max_length=2, default = "US")
-    state               = models.CharField(blank=True, max_length=2,
+    state               = models.CharField(max_length=2,
                                         choices=US_STATES,)
     city                = models.CharField(max_length=64,
                             help_text="No slashes. Letters, numbers, and dashes are okay. ")
@@ -114,10 +126,10 @@ class TrustAnchorCertificate(models.Model):
     npi                     = models.CharField(max_length=20,
                                          default="", blank=True)
     contact_first_name      = models.CharField(max_length=100,
-                                                  default="")
+                                                  default="", blank = True)
     contact_last_name       = models.CharField(max_length=100,
-                                                  default="")
-    contact_email           = models.EmailField()
+                                                  default="", blank = True)
+    contact_email           = models.EmailField(blank = True)
     contact_mobile_phone    = PhoneNumberField(max_length = 15, blank = True)
     contact_land_phone      = PhoneNumberField(max_length = 15, blank = True)
     contact_fax             = PhoneNumberField(max_length = 15, blank = True)
@@ -127,12 +139,26 @@ class TrustAnchorCertificate(models.Model):
     creation_date           = models.DateField(auto_now_add=True)
     
     def __unicode__(self):
-        return '%s (%s) Status=%s, Created %s.' % (self.domain,
-                            self.serial_number, self.status, self.creation_date)
+        return self.common_name
+    
+    def is_intermediate(self):
+        if self.parent:
+            return True
+        return False
     
     class Meta:
         get_latest_by = "creation_date"
         ordering = ('-creation_date',)
+        verbose_name = "Anchor"
+    
+    
+    class MPTTMeta:
+        order_insertion_by = ['common_name']
+        
+    def __unicode__(self):
+        return self.common_name   
+    
+    
         
     def save(self, **kwargs):
              
@@ -704,7 +730,7 @@ class DomainBoundCertificate(models.Model):
     class Meta:
         get_latest_by = "creation_date"
         ordering = ('-creation_date',)
-        verbose_name = "endpoint certificate"
+        verbose_name = "Endpoint"
         
     def save(self, **kwargs):
         if not self.sha256_digest and self.status=="incomplete":
@@ -1247,6 +1273,8 @@ class CertificateRevocationList(models.Model):
     class Meta:
         get_latest_by = "creation_date"
         ordering = ('-creation_date',)
+        verbose_name = "Certificate Revocation List for Root CA %s" % settings.CA_COMMON_NAME
+        verbose_name_plural = "Certificate Revocation List for Root CA %s" % settings.CA_COMMON_NAME
         
     def save(self, **kwargs):
         self.url = build_crl()
@@ -1266,6 +1294,8 @@ class AnchorCertificateRevocationList(models.Model):
     class Meta:
         get_latest_by = "creation_date"
         ordering = ('-creation_date',)
+        verbose_name = "Certificate Revocation List for Anchor"
+        verbose_name_plural = "Certificate Revocation Lists for Anchors" 
         
     def save(self, **kwargs):
         

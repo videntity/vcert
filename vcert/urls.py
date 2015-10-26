@@ -14,6 +14,7 @@ urlpatterns = patterns('',
                 {'document_root': settings.MEDIA_ROOT}),
     url(r'^accounts/', include('apps.accounts.urls')),
     url(r'^certificates/', include('apps.certificates.urls')),
+    url(r'^genres/', include('apps.genres.urls')),
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
 )
