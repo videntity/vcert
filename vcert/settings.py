@@ -151,17 +151,17 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-     
     # Uncomment the next line to enable the admin:
     'django.contrib.admin',
-    
     #This project
     'apps.accounts',
     'apps.certificates',
     'apps.home',
+    'apps.genres',
     #3rd party
     'django_extensions',
     'bootstrapform',
+    'mptt',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
 )
@@ -229,7 +229,7 @@ ACCOUNT_REQUEST_TEXT = "Contact example@example.com for a code."
 
 
 # Not reccomended to adjust this part
-
+CA_COMMON_NAME ="ca.example.com"
 CA_BASE_DIR = "/opt/ca/"
 CA_CONF_DIR       = os.path.join( CA_BASE_DIR, 'conf/' )
 CA_PRIVATE_DIR    = os.path.join( CA_BASE_DIR, 'private/' )
@@ -266,7 +266,10 @@ RCSP_BUCKET         = "rcsp.example.com"
 RCSPSHA1_BUCKET     = "rcspsha1.example.com"
 
 
-TEMPLATE_CONTEXT_PROCESSORS = global_settings.TEMPLATE_CONTEXT_PROCESSORS + ('apps.context_processors.global_title',)
+TEMPLATE_CONTEXT_PROCESSORS = global_settings.TEMPLATE_CONTEXT_PROCESSORS + \
+                ('apps.context_processors.global_title',
+                 'apps.context_processors.ca_common_name',
+                 )
 
 
 # To enable you local settings create or copy the example
