@@ -89,7 +89,7 @@
       <div class="row">
               <a class="btn pull-right btn-primary btn-small" href="/certificates/create-trust-anchor"
               data-toggle="tooltip" title="Create a top-level Trust Anchor">
-                <i class="fa fa-anchor"></i> {% trans "Create a Trust Anchor" %}
+                <i class="fa fa-anchor"></i> {% trans "Create a Top-Level Trust Anchor" %}
                     </a>
               
       </div>
@@ -111,7 +111,7 @@
                 {% recursetree nodes %}
                     <li>
                  
-                        <a  target="_blank" href="/certificates/view-anchor/{{ node.serial_number }}"
+                        <a  href="/certificates/view-anchor/{{ node.serial_number }}"
                         data-toggle="tooltip" title="View the anchor and its endpoints. Opens in a new tab">
                              
                               {{ node.common_name }}
@@ -122,10 +122,10 @@
                         {% if node.status == "good" %}
                         
                          <a class="btn-primary btn-xs" href="/certificates/create-intermediate-anchor/{{node.serial_number}}">
-                              <i class="fa fa-link"></i> {% trans "Create Intermediate Anchor" %}
+                              <i class="fa fa-anchor"></i>  {% trans "Create Intermediate Anchor" %}
                           </a>   | 
                      
-                          <a class="btn-primary btn-xs" href="/certificates/create-endpoint/{{node.serial_number}}">
+                          <a class="btn-success btn-xs" href="/certificates/create-endpoint/{{node.serial_number}}">
                               <i class="fa fa-hand-o-down"></i> {% trans "Create Endpoint" %}
                          </a> | 
                           

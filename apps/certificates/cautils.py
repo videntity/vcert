@@ -15,6 +15,19 @@ from datetime import datetime
 from fileutils import SimpleS3
 
 
+
+def sedswap(swap_this, for_that, config_file_path):
+ 
+    sed_str = """s#%s#%s#g""" % (swap_this, for_that)
+    error, output = subprocess.Popen(["sed", "-i", "-e", sed_str, config_file_path],
+                                stdout=subprocess.PIPE,
+                                stderr= subprocess.PIPE
+                                ).communicate()
+   
+    #print swap_this, for_that #, config_file_path
+    return error, output
+    
+
 def write_verification_message(serial_number, common_name, status,
                                cert_sha1_fingerprint,
                                note = ""):
@@ -58,10 +71,6 @@ def chain_keys_in_list(outpath, filenames):
         newcerts.append(nc)
     return newcerts
 
-
-
-
-
 def write_x5c_message(name, x5ckeys):
     jose_x509 = {"keys":[
                 {"kty":"PKIX",
@@ -70,7 +79,6 @@ def write_x5c_message(name, x5ckeys):
                     "kid":name }]
                 }
     return json.dumps(jose_x509, indent =4)
-
 
 
 def build_crl():
@@ -101,8 +109,6 @@ def build_crl():
         url= "Failed"
         
     return url
-
-
 
 
 def build_anchor_crl(trust_anchor):
@@ -185,7 +191,9 @@ def create_trust_anchor_certificate(common_name     = "example.com",
                                     rsakey          = 2048,
                                     user            = "alan",
                                     aia_url         = settings.AIA_FOR_TRUST_ANCHORS,
-                                    include_aia     = True ):
+                                    include_aia     = True,
+                                    parent          = None ):
+    
     #a  dict for all the things we want to return
     result = {  "sha256_digest":                      "",
                 "anchor_zip_download_file_name":      "",
@@ -195,11 +203,52 @@ def create_trust_anchor_certificate(common_name     = "example.com",
                 "private_key_path":                   "",
                 "public_key_path":                    "",
                 "notes":                              "Certificate generation in process.",
-                "completed_dir_path":                 ""}
-    
+                "completed_dir_path":                 "",
+                "aia_url":                            "",
+                "crl_url":                            "",
+                }
     
     dirname = str(uuid.uuid4())[0:5]
+    this_dir = os.path.join(settings.CA_INPROCESS_ANCHOR_DIR, dirname)
+    
     tname =  dns
+    os.chdir(settings.CA_INPROCESS_ANCHOR_DIR)
+    os.umask(0000)
+    os.mkdir(dirname)
+    os.chdir(this_dir)
+    
+    
+    if not parent:
+        #print "Root Trust Anchor"
+        conf_stub_file_name             = tname  + "trust-anchor-stub.cnf"
+        #conf_intermediate_stub_file_name  = tname  + "intermediate-anchor-stub.cnf"
+        completed_user_dir              = os.path.join(settings.CA_COMPLETED_DIR, user )
+        completed_user_anchor_dir       = os.path.join(completed_user_dir, "anchors")
+        completed_this_anchor_dir       = os.path.join(completed_user_anchor_dir, dns)
+        completed_user_dom_bound_dir    = os.path.join(completed_this_anchor_dir, "endoints")
+        completed_user_intermediate_dir = os.path.join(completed_this_anchor_dir, "intermediates")
+        # Copy a stub configs to our working directory----------------------------------
+        copyfile(os.path.join(settings.CA_CONF_DIR, "trust-anchor-stub.cnf"),
+                               conf_stub_file_name)
+        this_conf = os.path.join(this_dir, conf_stub_file_name) 
+
+        
+    else:
+        #print "Intermediate Anchor"
+        conf_stub_file_name             = tname  + "intermediate-stub.cnf"
+        completed_user_dir              = os.path.join(parent.completed_dir_path)
+        completed_user_anchor_dir       = os.path.join(completed_user_dir, "anchors")
+        completed_user_intermediate_dir = os.path.join(parent.completed_dir_path, "intermediates")
+        
+        completed_user_dom_bound_dir    = os.path.join(completed_user_dir, "endoints")
+        completed_this_anchor_dir       = os.path.join(completed_user_anchor_dir, dns)
+        # Copy a stub config file to our directory----------------------------------
+        copyfile(os.path.join(settings.CA_CONF_DIR, "intermediate-anchor-stub.cnf"),
+                 conf_stub_file_name)
+        this_conf = os.path.join(this_dir, conf_stub_file_name) 
+ 
+    #print "COMPLETED PATH IS: ",  completed_this_anchor_dir
+
     keysize = "rsa:" + str(rsakey)
     csrname = tname + ".csr"
     privkeyname = tname + "Key.key"         # Private key in pem format
@@ -208,15 +257,10 @@ def create_trust_anchor_certificate(common_name     = "example.com",
     public_cert_name =  tname + ".pem"      #pubic certificate as a PEM
     public_cert_name_der =  tname + ".der"  # pubic certificate as a der
     anchor_zip_download_file_name = tname + "-ANCHOR.zip"
-    conf_stub_file_name = tname  + "trust-anchor-stub.cnf"
     crl_conf_stub_file_name = tname  + "crl.cnf"
-    completed_user_dir = os.path.join(settings.CA_COMPLETED_DIR, user )
-    completed_user_anchor_dir = os.path.join(completed_user_dir, "anchors")
-    completed_user_dom_bound_dir = os.path.join(completed_user_dir, "endoints")
-    completed_this_anchor_dir = os.path.join(completed_user_anchor_dir,
-                                             str(uuid.uuid4()) ,dns)
+    private_key_path_pem = os.path.join(completed_this_anchor_dir, privkeyname)
+    public_key_path_pem = os.path.join(completed_this_anchor_dir, public_cert_name)
 
-    
     subj = '/emailAddress=' + email + \
            '/C='            + country +  \
            '/ST='           + state + \
@@ -224,10 +268,7 @@ def create_trust_anchor_certificate(common_name     = "example.com",
            '/CN='           + common_name + \
            '/O='            + organization
     
-    os.chdir("/opt/ca/inprocess/anchors")
-    os.umask(0000)
-    os.mkdir(dirname)
-    os.chdir(dirname)
+
     
     #Create the signing request. ----------------------------------------------
     error, output  = subprocess.Popen(["openssl", "req", "-subj", subj , "-out", csrname,
@@ -236,102 +277,72 @@ def create_trust_anchor_certificate(common_name     = "example.com",
                             stdout = subprocess.PIPE,
                             stderr= subprocess.PIPE,
                             ).communicate()
-    print output
+    print "Signing request", output
+    
+    #Prepare for the signing ----------------------------------
     
     
-    #get the next serial number ------------------------------------------------
-    fp = open("/opt/ca/conf/serial", "r")
+    #get the next serial number --------------------------------
+    fp = open(settings.CA_MAIN_SERIAL, "r")
     serial = str(fp.read())
     fp.close()
     
     
-    # Copy a stub config file to our directory----------------------------------
-    copyfile(os.path.join(settings.CA_CONF_DIR, "trust-anchor-stub.cnf"), conf_stub_file_name)
-    
+   
     # Prepare strings for sed, that will be used to fillout our stub into a usable config file.
     
-    #Prepare sed strings
-    seddns = "s/|DNS|/%s/g" % (dns)
-    seddays = "s/|DAYS|/%s/g" % (expires)
-    sedserial = "s#|SERIAL|#%s#g" % (serial[:-1])
-    sedcountry = "s#|COUNTRY|#%s#g" % (country)
-    sedstate= "s#|STATE|#%s#g" % (state)
-    sedcity = "s#|CITY|#%s#g" % (city)
-    sedcommon_name =  "s#|COMMON_NAME|#%s#g" % (common_name)
-    sedorganization = "s#|ORGANIZATION|#%s#g" % (organization)
-    sedemail = "s#|EMAIL_ADDRESS|#%s#g" % (email)
-    if include_aia:
-        sedaia = "s#|AIA_FOR_TRUST_ANCHORS|#%s#g" % (aia_url)
+    error, output = sedswap("|DNS|", dns, this_conf)
+    error, output = sedswap("|DAYS|", expires, this_conf)
+    error, output = sedswap("|SERIAL|", serial[:-1], this_conf)
+    error, output = sedswap("|COUNTRY|", country, this_conf)
+    error, output = sedswap("|STATE|", state ,this_conf)
+    error, output = sedswap("|CITY|", city , this_conf)
+    error, output = sedswap("|COMMON_NAME|", common_name, this_conf)
+    error, output = sedswap("|ORGANIZATION|", organization ,this_conf)
+    error, output = sedswap("|EMAIL_ADDRESS|", email, this_conf)
+    
+
+
+    if not parent:
+        error, output = sedswap("|ANCHORDNS|", settings.CA_COMMON_NAME,  this_conf)
+
     else:
-        sedaia = "s#|AIA_FOR_TRUST_ANCHORS|#%s#g" % (settings.INVALID_AIA_URL)
+        error, output = sedswap("|CERTIFICATE|", parent.public_key_path, this_conf)
+        error, output = sedswap("|COMPLETED_ANCHOR_DIR|", parent.completed_dir_path, this_conf)
+        error, output = sedswap("|ANCHORDNS|", parent.common_name,  conf_stub_file_name)
+        error, output = sedswap("|PRIVATE_KEY|", parent.private_key_path,  this_conf)
     
-    
-    #Apply the sed operations --------------------------------------------------- 
-    error, output = subprocess.Popen(["sed", "-i", "-e", seddns,  conf_stub_file_name],
-                                stdout=subprocess.PIPE,
-                                stderr= subprocess.PIPE
-                                ).communicate()
-    error, output = subprocess.Popen(["sed", "-i", "-e", seddays, conf_stub_file_name],
-                                stdout=subprocess.PIPE,
-                                stderr= subprocess.PIPE
-                                ).communicate()    
-    error, output = subprocess.Popen(["sed", "-i", "-e", sedserial, conf_stub_file_name],
-                                stdout=subprocess.PIPE,
-                                stderr= subprocess.PIPE
-                                ).communicate()  
-    error, output = subprocess.Popen(["sed", "-i", "-e", sedcountry,
-                                      conf_stub_file_name],
-                                        stdout=subprocess.PIPE,
-                                        stderr= subprocess.PIPE
-                                        ).communicate()
-    
-    error, output = subprocess.Popen(["sed", "-i", "-e", sedstate,
-                                      conf_stub_file_name],
-                                        stdout=subprocess.PIPE,
-                                        stderr= subprocess.PIPE
-                                        ).communicate()
-
-    error, output = subprocess.Popen(["sed", "-i", "-e", sedcity,
-                                      conf_stub_file_name],
-                                        stdout=subprocess.PIPE,
-                                        stderr= subprocess.PIPE
-                                        ).communicate()
-
-    error, output = subprocess.Popen(["sed", "-i", "-e", sedcommon_name,
-                                      conf_stub_file_name],
-                                        stdout=subprocess.PIPE,
-                                        stderr= subprocess.PIPE
-                                        ).communicate()
-    error, output = subprocess.Popen(["sed", "-i", "-e", sedorganization,
-                                      conf_stub_file_name],
-                                        stdout=subprocess.PIPE,
-                                        stderr= subprocess.PIPE
-                                        ).communicate()
-    
-    error, output = subprocess.Popen(["sed", "-i", "-e", sedemail,
-                                      conf_stub_file_name],
-                                        stdout=subprocess.PIPE,
-                                        stderr= subprocess.PIPE
-                                        ).communicate()
-    
-    error, output = subprocess.Popen(["sed", "-i", "-e", sedaia,
-                                      conf_stub_file_name],
-                                        stdout=subprocess.PIPE,
-                                        stderr= subprocess.PIPE
-                                        ).communicate()
-    
-    
+    if include_aia:
+ 
+        if not parent: 
+            aia = settings.CA_COMMON_NAME
+        else:
+            aia = parent.aia_url
+        error, output = sedswap("|AIA_FOR_TRUST_ANCHORS|", aia,  this_conf)
+        
+    else:
+        error, output = sedswap("|AIA_FOR_TRUST_ANCHORS|", settings.INVALID_AIA_URL,  this_conf)
+  
     
     # Build the certificate from the signing request.
-    
-    password = "pass:" + settings.PRIVATE_PASSWORD #TODO Find a more secure way to do this
-    #
-    error, signoutput = subprocess.Popen(["openssl", "ca", "-batch", "-config",
-                             conf_stub_file_name, "-in", csrname, "-out",
+    if not parent:
+        password = "pass:" + settings.PRIVATE_PASSWORD #TODO Find a more secure way to do this
+        
+        error, signoutput = subprocess.Popen(["openssl", "ca", "-batch", "-config",
+                             this_conf, "-in", csrname, "-out",
                              public_cert_name, "-passin", password],
                              stdout=subprocess.PIPE,
                              stderr= subprocess.PIPE
                             ).communicate()
+    else:
+        #print "build cert"
+        error, signoutput = subprocess.Popen(["openssl", "ca", "-batch", "-config",
+                             this_conf, "-in", csrname, "-out",
+                             public_cert_name],
+                             stdout=subprocess.PIPE,
+                             stderr= subprocess.PIPE
+                            ).communicate()
+    
 
     print "CERT SIGN OUT", signoutput
     
@@ -343,9 +354,9 @@ def create_trust_anchor_certificate(common_name     = "example.com",
         os.chdir(settings.BASE_DIR) 
         return result
         
-    
+    #The certifciate was created so let's start plucking info out.
     #get the serial number
-    
+    #print "get the serial from the cert"
     output,error = subprocess.Popen(["openssl", "x509", "-in",
                                       public_cert_name, "-serial","-noout",],
                              stdout=subprocess.PIPE,
@@ -363,7 +374,6 @@ def create_trust_anchor_certificate(common_name     = "example.com",
         
     
     #print "SERIAL:",  serial_number
-    sedserial = "s#|SERIAL|#%s#g" % (serial_number)
     #get the sha1 fingerprint
     output,error = subprocess.Popen(["openssl", "x509", "-in",
                                       public_cert_name, "-fingerprint","-noout",],
@@ -371,14 +381,9 @@ def create_trust_anchor_certificate(common_name     = "example.com",
                              stderr= subprocess.PIPE
                             ).communicate()
     
-    
-
     fpsplit = output.split("=")
     sha1_fingerprint = str(fpsplit[1])[:-1]
-    #print "SHA1 Fingerprint:",  sha1_fingerprint
-    
-    
-    
+    #print "SHA1 Fingerprint:",  sha1_fingerprint 
     # Convert the public pem into a der
     error, output = subprocess.Popen(["openssl", "x509", "-outform", "der", "-in",
                                       public_cert_name, "-out",
@@ -386,9 +391,7 @@ def create_trust_anchor_certificate(common_name     = "example.com",
                              stdout=subprocess.PIPE,
                              stderr= subprocess.PIPE
                             ).communicate()
-    
 
-    
     
     error, output = subprocess.Popen(["openssl", "x509", "-outform", "der",
                                       "-in", public_cert_name, "-out",
@@ -422,6 +425,9 @@ def create_trust_anchor_certificate(common_name     = "example.com",
     
     if not os.path.exists(completed_user_anchor_dir):
         os.makedirs(completed_user_anchor_dir)
+     
+    if not os.path.exists(completed_user_intermediate_dir):
+        os.makedirs(completed_user_intermediate_dir) 
         
         
     completed_this_anchor_dir = os.path.join(completed_user_anchor_dir, dns)
@@ -436,11 +442,7 @@ def create_trust_anchor_certificate(common_name     = "example.com",
                                     stdout=subprocess.PIPE,
                                     stderr= subprocess.PIPE
                                     ).communicate()
-    
-    #Private Key Path for PEM
-    private_key_path_pem = os.path.join(completed_this_anchor_dir, privkeyname)
-    public_key_path_pem = os.path.join(completed_this_anchor_dir, public_cert_name)
-    
+
     
     #build result dict
     result.update({"sha256_digest": sha256_digest,
@@ -452,14 +454,15 @@ def create_trust_anchor_certificate(common_name     = "example.com",
                    "private_key_path": private_key_path_pem,
                    "public_key_path": public_key_path_pem,
                    "completed_dir_path": completed_this_anchor_dir,
-                   })
-    
-    
+                   "aia_url":  aia,
+                   "crl_url": "http://fpp.com/foo.crl"})
     
     # Get back to the directory we started.
     os.chdir(settings.BASE_DIR) 
 
     return result
+    
+
     
 
 
@@ -507,8 +510,8 @@ def create_endpoint_certificate(common_name     = "foo.example.com",
 
     completed_user_dir = os.path.join(settings.CA_COMPLETED_DIR, user )
     completed_endpoint_dir = os.path.join(completed_anchor_dir, "endpoints/")
-
     completed_this_endpoint = os.path.join(completed_endpoint_dir, dns, )
+    
     print "Email is ", email
    
     
@@ -546,7 +549,7 @@ def create_endpoint_certificate(common_name     = "foo.example.com",
     
     
     #get the next serial number
-    fp = open("/opt/ca/conf/serial", "r")
+    fp = open(settings.CA_MAIN_SERIAL, "r")
     serial = str(fp.read())
     fp.close()
     

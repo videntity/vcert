@@ -19,6 +19,7 @@ from fileutils import SimpleS3
 from django.core.mail import send_mail, EmailMessage
 from shutil import copyfile
 
+import mptt.utils
 
 from mptt.models import MPTTModel, TreeForeignKey
 
@@ -45,7 +46,7 @@ class TrustAnchorCertificate(MPTTModel):
     parent              = TreeForeignKey('self', null=True, blank=True, related_name='children', db_index=True)
     
     common_name         = models.CharField(max_length=512, default=uuid_default_common_name,
-                            help_text= "Always set this to the same value as domain")
+                            help_text= "The common name (CN) for the anchor. (e.g. example.com)")
 
     status              = models.CharField(max_length=10, default="incomplete",
                                          choices=STATUS_CHOICES,
@@ -58,8 +59,8 @@ class TrustAnchorCertificate(MPTTModel):
                               help_text= "e.g. example.com")
 
     dns                 = models.CharField(verbose_name="DNS", max_length=512, default="",
-                            help_text= """e.g. example.com.
-                             This field should match the email field exactly.
+                            help_text= """The DNS and the common name (CN) for the anchor. (e.g. example.com)
+                             
                             """)
     email               = models.CharField(max_length=512, default="",             
                             help_text= """We recommend using a top-level domain here (e.g. example.com).
@@ -75,6 +76,12 @@ class TrustAnchorCertificate(MPTTModel):
                             help_text="No slashes. Letters, numbers, and dashes are okay. ")
     
     include_aia         = models.BooleanField(default=True, blank=True, verbose_name= "Include AIA")
+    aia_url             = models.CharField(max_length=1024,
+                            help_text="The AIA URL ",default="", blank=True)
+    
+    crl_url             = models.CharField(max_length=1024,
+                            help_text="The CRL URL ",default="", blank=True)
+    
     private_key_path    = models.CharField(max_length=1024, default="",
                                         blank=True)
     public_key_path     = models.CharField(max_length=1024, default="",
@@ -164,10 +171,19 @@ class TrustAnchorCertificate(MPTTModel):
              
         if not self.sha256_digest and self.revoke==False:
             """I'm a new certificate"""
-
+            
+            if not self.dns:
+                self.dns=self.common_name
+            
+            if not self.email:
+                self.email=self.common_name
+                
             today = datetime.date.today ()
             self.expiration_date = today + datetime.timedelta(
                                                     days=self.expire_days)
+            
+            
+
             result = create_trust_anchor_certificate(
                                         common_name     = self.common_name,
                                         email           = self.email,
@@ -179,7 +195,9 @@ class TrustAnchorCertificate(MPTTModel):
                                         country         = self.country,
                                         rsakey          = self.rsa_keysize,
                                         user            = self.owner.username,
-                                        include_aia     = self.include_aia)
+                                        include_aia     = self.include_aia,
+                                        parent          = self.parent)
+
             
             self.sha256_digest      = result['sha256_digest']
             self.serial_number      = result['serial_number']
@@ -190,22 +208,25 @@ class TrustAnchorCertificate(MPTTModel):
             self.private_key_path   = result['private_key_path']
             self.public_key_path    = result['public_key_path']
             self.completed_dir_path = result['completed_dir_path']
+            self.aia_url            = result['aia_url']
+            self.crl_url            = result['crl_url']
             
             #send the verifier an email notification
-            msg = """
-            <html>
-            <head>
-            </head>
-            <body>
-            A new Direct Trust Anchor was created by %s and requires your review.
-            Here is a link for the domain %s:
-            <ul>
-            <li><a href="/admin/certificates/trustanchorcertificate/%s">%s</a></li>
-            </ul>
-            </body>
-            </html>
-            """ % (self.organization, self.domain, self.id, self.domain)
             if settings.SEND_CA_EMAIL:
+                msg = """
+                <html>
+                <head>
+                </head>
+                <body>
+                A new Direct Trust Anchor was created by %s and requires your review.
+                Here is a link for the domain %s:
+                <ul>
+                <li><a href="/admin/certificates/trustanchorcertificate/%s">%s</a></li>
+                </ul>
+                </body>
+                </html>
+                """ % (self.organization, self.domain, self.id, self.domain)
+            
                 subject = "[%s]A new Trust Anchor certificate requires verification" % (settings.ORGANIZATION_NAME)
                 msg = EmailMessage(subject,
                                msg,
@@ -218,7 +239,7 @@ class TrustAnchorCertificate(MPTTModel):
             
             # Create the CRL config file
             crl_result = create_crl_conf(
-                      common_name           = self.common_name,
+                        common_name         = self.common_name,
                         email               = self.email,
                         dns                 = self.dns,
                         anchor_dns          = self.dns,
@@ -237,7 +258,7 @@ class TrustAnchorCertificate(MPTTModel):
             return super(TrustAnchorCertificate, self).save(**kwargs)
            
 
-            
+        #Verify --------------------------------------------------------------    
         if self.verified and not self.verified_message_sent and \
            self.status in  ('unverified', 'good'):
             """This is the verify routine"""
@@ -247,8 +268,7 @@ class TrustAnchorCertificate(MPTTModel):
             rcsp_result = write_verification_message(self.serial_number,
                                                      self.common_name,
                                                     "good",
-                                                    self.sha1_fingerprint,
-                                                    )
+                                                    self.sha1_fingerprint)
             #Write it to db
             self.rcsp_response = rcsp_result
             fn = "%s.json" % (self.serial_number)
@@ -312,10 +332,18 @@ class TrustAnchorCertificate(MPTTModel):
             
             # JOSE X5C-------------------------------------------------------------
             #get all the files
-            certfilelist = [settings.CA_PUBLIC_CERT, self.public_key_path]
+            
+            if self.parent:
+                certfilelist = [settings.CA_PUBLIC_CERT, self.public_key_path]
+            else:
+                print "Ancestors", self.get_ancestors()
+                certfilelist = [settings.CA_PUBLIC_CERT, self.public_key_path]
+                
             
             fn = "%s-chain.pem" % (self.dns)
             chained_cert_path = os.path.join(self.completed_dir_path, fn )
+            print "CHAINED", chained_cert_path, certfilelist
+         
             certlist = chain_keys_in_list(chained_cert_path, certfilelist)
             #write the json
             
@@ -620,6 +648,9 @@ class TrustAnchorCertificate(MPTTModel):
 
 class DomainBoundCertificate(models.Model):
     trust_anchor      = models.ForeignKey(TrustAnchorCertificate)
+    common_name       = models.CharField(max_length=512, default=uuid_default_common_name, unique=True)
+    
+    
     status            = models.CharField(max_length=10, default="incomplete",
                                          choices=STATUS_CHOICES)
     sha256_digest     = models.CharField(max_length=64, default="", blank=True,)
@@ -629,7 +660,7 @@ class DomainBoundCertificate(models.Model):
                                          #editable=False)
     domain            = models.CharField(max_length=512, default="",
                                          help_text="This value should match the email.")
-    common_name       = models.CharField(max_length=512, default="")
+    
     dns               = models.CharField(max_length=512, default="",
                                          verbose_name = "DNS",
                             help_text="""This should always match the email field,
@@ -646,13 +677,20 @@ class DomainBoundCertificate(models.Model):
     state                       = models.CharField(blank=True, max_length=2,
                                         choices=US_STATES)
     city                        = models.CharField(max_length=64,
-                                                   help_text="Letters, numbers, and dashes okay. No slashes")
+                                        help_text="Letters, numbers, and dashes okay. No slashes")
     organization                = models.CharField(max_length=64,
                                                    help_text="Letters, numbers, and dashes okay. No slashes")
     include_aia         = models.BooleanField(default=True, blank=True, verbose_name= "Include AIA")
+    include_crl        = models.BooleanField(default=True, blank=True, verbose_name= "Include CRL")
+    aia_url             = models.CharField(max_length=1024,
+                            help_text="The AIA URL ", default="", blank=True)
+    
+    crl_url             = models.CharField(max_length=1024,
+                            help_text="The CRL URL ",default="", blank=True)    
     
     completed_dir_path          = models.CharField(max_length=1024, default="",
                                         blank=True)
+    
     public_key_path             = models.CharField(max_length=1024, default="",
                                         blank=True)
 
@@ -731,6 +769,22 @@ class DomainBoundCertificate(models.Model):
         get_latest_by = "creation_date"
         ordering = ('-creation_date',)
         verbose_name = "Endpoint"
+     
+    def email_or_domain_bound(self):
+        if self.common_name.__contains__("@"):
+            return "Email"
+        return "Domain"
+    
+    def is_email_bound(self):
+        if self.common_name.__contains__("@a"):
+            return True
+        return False
+
+    def is_domain_bound(self):
+        if not self.common_name.__contains__("@"):
+            return True
+        return False
+
         
     def save(self, **kwargs):
         if not self.sha256_digest and self.status=="incomplete":
