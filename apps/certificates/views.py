@@ -13,8 +13,8 @@ from models import DomainBoundCertificate, TrustAnchorCertificate
 from forms import (TrustAnchorCertificateForm, DomainBoundCertificateForm,
             RevokeDomainBoundCertificateForm, RevokeTrustAnchorCertificateForm,
             VerifyDomainBoundCertificateForm, VerifyTrustAnchorCertificateForm)
-
-
+from mptt.utils import drilldown_tree_for_node, previous_current_next
+from django.db.models import Q
 
 @login_required
 def create_intermediate_anchor_certificate(request, serial_number):
@@ -37,8 +37,8 @@ def create_intermediate_anchor_certificate(request, serial_number):
                 messages.success(request, _("Your trust anchor creation request completed successfully. A human must verify this information before you can create endpoint certificates. An email will be sent when this process is complete."))
             elif ta.status == "failed":
                 messages.error(request, _("Oops.  Something has gone wrong.  Your trust anchor certifcate creation request failed. Please contact customer support."))
-        
-            return HttpResponseRedirect(reverse('home'))
+            return HttpResponseRedirect(reverse('verify_anchor_certificate', args=(a.serial_number,)))
+            
         else:
             #The form is invalid
              messages.error(request,_("Please correct the errors in the form."))
@@ -87,49 +87,68 @@ def certificate_dashboard(request):
 
 @login_required
 def view_anchor(request, serial_number):
-    a = get_object_or_404(TrustAnchorCertificate, serial_number=serial_number,
+    #get all active trust anchors decendants and associated domain-bound certs
+    anchor = get_object_or_404(TrustAnchorCertificate, serial_number=serial_number,
                                owner = request.user)
-
-    #get all active trust anchors and associated domain-bound certs
     
-    active_cert_list  = []
     
-    active_tas = TrustAnchorCertificate.objects.filter(owner=request.user,
-                                                       status="good") | \
-                 TrustAnchorCertificate.objects.filter(owner=request.user,
-                                                       status="unverified")
     
-    for a in active_tas:
-        domain = { 'trust_anchor': a,
-                  'domain_bounds': None
-                  }
-        domain_bounds = DomainBoundCertificate.objects.filter(trust_anchor=a,
-                                                        status="good") | \
-                        DomainBoundCertificate.objects.filter(trust_anchor=a,
-                                                    status="unverified")
-        if domain_bounds:
-            domain['domain_bounds'] = domain_bounds
-        active_cert_list.append(domain)
+    active_children=[]
+    revoked_children=[]
+    revoked_anchors=[]
+    revoked_descandants=[]
+    descendant_anchors=[]
+    descendant_revoked_anchors=[]
+    active_endpoints =[]
+    revoked_anchors=[]
+    revoked_endpoints =[]
     
-
-    revoked_cert_list  = []
     
-    revoked_tas = TrustAnchorCertificate.objects.filter(owner=request.user,
-                                                        status = "revoked")    
+    for c in anchor.get_children():
         
-    for r in revoked_tas:
-        revoked_cert_list.append(r)
-       
-    domain_bounds = DomainBoundCertificate.objects.filter(
-                                        trust_anchor__owner=request.user,
-                                        status="revoked")
-    for d in domain_bounds:
-        revoked_cert_list.append(d)
+        if str(c.owner)==str(request.user) and c.status in ("good", "verified"):
+             active_children.append(c)
+        elif str(c.owner)==str(request.user) and c.status=="revoked":
+            revoked_children.append(c)
 
+    for d in anchor.get_descendants():
         
-    context={ 'ta': a,
-              'active_cert_list': active_cert_list,
-              'revoked_cert_list': revoked_cert_list, 
+        if str(d.owner)==str(request.user) and d.status in ("good", "verified"):
+             descendant_anchors.append(d)
+        elif str(d.owner)==str(request.user) and d.status=="revoked":
+            descendant_revoked_anchors.append(d)
+    
+    active_anchors  = [anchor, ] + active_children
+    
+    revoked_anchors = descendant_revoked_anchors
+    
+    
+    active_endpoints = DomainBoundCertificate.objects.filter(~Q(trust_anchor__parent = None),
+                                                             status="good"
+                                                             ) | \
+                       DomainBoundCertificate.objects.filter(~Q(trust_anchor__parent = None),
+                                                             status="unverified"
+                                                             )
+    
+    
+    # DomainBoundCertificate.objects.filter(trust_anchor__parent=!None
+    #                                                     status="good") | \
+    #                     DomainBoundCertificate.objects.filter(trust_anchor=anchor,
+    #                                                 status="unverified")
+    #     
+    # revoked_endpoints = DomainBoundCertificate.objects.filter(trust_anchor=anchor,
+    #                                                     status="revoked")   
+    revoked_certs = revoked_anchors + list(revoked_endpoints)
+        
+  
+    print  active_anchors
+    
+    print revoked_certs
+        
+    context={ 'anchor': anchor,
+              'active_cert_list': active_anchors,
+              'active_endpoints': active_endpoints,
+              'revoked_cert_list': revoked_certs, 
              }
     
     return render_to_response('anchor.html',
@@ -139,10 +158,10 @@ def view_anchor(request, serial_number):
 
 @login_required
 def create_endpoint_certificate(request, serial_number):
-    name = _("Create an Endpoint Certificate")
-    if request.method == 'POST':
-        ta = get_object_or_404(TrustAnchorCertificate, serial_number=serial_number,
+    ta = get_object_or_404(TrustAnchorCertificate, serial_number=serial_number,
                                owner = request.user)
+    name = _("Create an Endpoint Certificate for ") + ta.common_name
+    if request.method == 'POST':
         form = DomainBoundCertificateForm(request.POST)
         if form.is_valid():
             c = form.save(commit = False)
@@ -151,11 +170,11 @@ def create_endpoint_certificate(request, serial_number):
             c.trust_anchor = ta
             c.save()
             if c.status == "unverified":
-                messages.success(request, _("Your Direct certificate creation request completed successfully."))
+                messages.success(request, _("Your Direct endpoint certificate creation request completed successfully."))
             elif c.status == "failed":
-                messages.error(request, _("Oops.  Something has gone wrong.  Your certifcate creation request failed."))
+                messages.error(request, _("Oops.  Something has gone wrong.  Your certificate creation request failed."))
             
-            return HttpResponseRedirect(reverse('home'))
+            return HttpResponseRedirect(reverse('verify_anchor_certificate', args=(ta.serial_number,)))
         else:
             #The form is invalid
              messages.error(request,_("Please correct the errors in the form."))
@@ -166,10 +185,7 @@ def create_endpoint_certificate(request, serial_number):
                                             RequestContext(request))
             
    #this is a GET
-    ta = get_object_or_404(TrustAnchorCertificate, serial_number=serial_number,
-                               owner = request.user)
     up = UserProfile.objects.get(user=request.user)
-    #dnsguess ="direct.%s" % (ta.dns)
     data ={'contact_first_name': request.user.first_name,
            'contact_last_name': request.user.last_name,
            'city': up.city,
@@ -187,7 +203,7 @@ def create_endpoint_certificate(request, serial_number):
 
 @login_required
 def create_trust_anchor_certificate(request):
-    name = _("Create a Trust Anchor Certificate")
+    name = _("Create a Top Level Trust Anchor Certificate")
     if request.method == 'POST':
         form = TrustAnchorCertificateForm(request.POST)
         if form.is_valid():
@@ -324,7 +340,7 @@ def verify_anchor_certificate(request, serial_number):
             
            
             
-            return HttpResponseRedirect(reverse('home'))
+            return HttpResponseRedirect(reverse('verify_anchor_certificate', args=(ta.serial_number,)))
         else:
             #The form is invalid
              messages.error(request,_("Please correct the errors in the form."))
@@ -348,11 +364,11 @@ def verify_anchor_certificate(request, serial_number):
 def verify_endpoint_certificate(request, serial_number):
     
     name = _("Verify a Domain Bound Certificate")
-    dbc = get_object_or_404(DomainBoundCertificate, serial_number=serial_number,
+    e = get_object_or_404(DomainBoundCertificate, serial_number=serial_number,
                                trust_anchor__owner = request.user)
         
     if request.method == 'POST':
-        form = VerifyDomainBoundCertificateForm(request.POST, instance = dbc)
+        form = VerifyDomainBoundCertificateForm(request.POST, instance = e)
         if form.is_valid():
             m = form.save()
             if m.verified:
@@ -360,7 +376,7 @@ def verify_endpoint_certificate(request, serial_number):
             else:
                 messages.error(request, _("The Direct endpoint certificate was NOT verified. Something has gone wrong. Contact a systems administrator."))
             
-            return HttpResponseRedirect(reverse('home'))
+            return HttpResponseRedirect(reverse('verify_anchor_certificate', args=(e.trust_anchor.serial_number,)))
         else:
             #The form is invalid
              messages.error(request,_("Please correct the errors in the form."))
@@ -369,10 +385,9 @@ def verify_endpoint_certificate(request, serial_number):
                                              'name':name,
                                              },
                                             RequestContext(request))
-            
     #this is a GET
     context= {'name': name,
-              'form': VerifyDomainBoundCertificateForm(instance = dbc)
+              'form': VerifyDomainBoundCertificateForm(instance = e)
               }
     return render_to_response('generic/bootstrapform.html',
                               RequestContext(request, context,))

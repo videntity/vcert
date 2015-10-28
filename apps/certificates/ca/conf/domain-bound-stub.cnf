@@ -23,10 +23,20 @@ keyUsage                = keyCertSign, cRLSign
 crlDistributionPoints   = URI:http://ca.directca.org/crl/ca.directca.org.crl
 
 [alt_names]
-DNS.1                   = ca.directca.org
+DNS.1                   = |COMMON_NAME|
 
 [ ca ]
 default_ca              = CA_default
+
+
+[ policy_match ]
+countryName             = match
+stateOrProvinceName     = supplied
+localityName            = supplied
+organizationName        = supplied
+organizationalUnitName  = optional
+commonName              = supplied
+emailAddress            = supplied
 
 [ CA_default ]
 dir                     = .
@@ -44,14 +54,7 @@ default_md              = sha256
 preserve                = no
 policy                  = policy_match
 
-[ policy_match ]
-countryName             = match
-stateOrProvinceName     = supplied
-localityName            = supplied
-organizationName        = supplied
-organizationalUnitName  = optional
-commonName              = supplied
-emailAddress            = supplied
+
 
 [ usr_cert ]
 basicConstraints        = CA:FALSE
@@ -62,5 +65,3 @@ keyUsage                = digitalSignature, keyEncipherment
 crlDistributionPoints   = URI:http://ca.directca.org/crl/|ANCHORDNS|.crl
 authorityInfoAccess     = caIssuers;URI:|AIA-DER|
 
-#[ crl_ext ]
-#authorityKeyIdentifier  = keyid:always,issuer:always

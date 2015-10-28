@@ -16,14 +16,10 @@ emailAddress            = |EMAIL_ADDRESS|
 
 [ v3_ca ]
 subjectKeyIdentifier    = hash
-subjectAltName          = @alt_names
 authorityKeyIdentifier  = keyid:always,issuer:always
 basicConstraints        = critical, CA:true
 keyUsage                = keyCertSign, cRLSign
 crlDistributionPoints   = URI:http://sampleca.nist.gov/crl/sampleca.nist.gov.crl
-
-[alt_names]
-DNS.1                   = ca.example.com
 
 [ ca ]
 default_ca              = CA_default

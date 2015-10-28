@@ -1,44 +1,52 @@
 [ req ]
-default_bits            = 4096
-default_keyfile         = /opt/ca/private/ca.directca.orgKey.pem
+default_bits            = 2048
+default_keyfile         = |PRIVATE_KEY|
 default_md              = sha256
 prompt                  = no
-distinguished_name      = sub_ca_distinguished_name
+distinguished_name      = sub_distinguished_name
 x509_extensions         = v3_ca
 
-[ sub_ca_distinguished_name ]
+[ sub_distinguished_name ]
 countryName             = |COUNTRY|
 stateOrProvinceName     = |STATE|
 localityName            = |CITY|
 0.organizationName      = |ORGANIZATION|
 commonName              = |COMMON_NAME|
-#emailAddress           = |EMAIL_ADDRESS|
+#emailAddress            = |EMAIL_ADDRESS|
 
 [ v3_ca ]
 subjectKeyIdentifier    = hash
+#subjectAltName          = @alt_names
 authorityKeyIdentifier  = keyid:always,issuer:always
 basicConstraints        = critical, CA:true
 keyUsage                = critical, keyCertSign, cRLSign
-crlDistributionPoints   = URI:http://ca.directca.org/crl/ca.directca.org.crl
+crlDistributionPoints   = URI:http://ca.directca.org/crl/|ANCHORDNS|.crl
+
+
+#[alt_names]
+#DNS.1                   = ca.directca.org
 
 [ ca ]
 default_ca              = CA_default
 
+
+
 [ CA_default ]
 dir                     = .
 new_certs_dir           = /opt/ca/signed-keys/
-database                = /opt/ca/conf/index
-certificate             = /opt/ca/public/ca.directca.org.pem
+database                = |COMPLETED_ANCHOR_DIR|/index
+certificate             = |CERTIFICATE|
 serial                  = /opt/ca/conf/serial
-private_key             = /opt/ca/private/ca.directca.orgKey.pem
+private_key             = |PRIVATE_KEY|
 x509_extensions         = usr_cert
 name_opt                = ca_default
 cert_opt                = ca_default
-default_crl_days        = 01
+default_crl_days        = 1
 default_days            = |DAYS|
 default_md              = sha256
 preserve                = no
 policy                  = policy_match
+
 
 [ policy_match ]
 countryName             = match
@@ -50,12 +58,12 @@ commonName              = supplied
 emailAddress            = supplied
 
 [ usr_cert ]
-basicConstraints        = CA:true
+subjectAltName          = DNS: |DNS|
 subjectKeyIdentifier    = hash
-authorityKeyIdentifier  = keyid ,issuer:always
-keyUsage                = digitalSignature, keyCertSign, cRLSign
-crlDistributionPoints   = URI:http://ca.directca.org/crl/|COMMON_NAME|.crl
-authorityInfoAccess     = caIssuers;URI:|AIA_FOR_TRUST_ANCHORS|
+authorityKeyIdentifier  = keyid:always #, issuer:always
+keyUsage                = digitalSignature, keyEncipherment
+crlDistributionPoints   = URI:http://ca.directca.org/crl/|ANCHORDNS|.crl
+authorityInfoAccess     = caIssuers;URI:|AIA-DER|
 
 [ crl_ext ]
 authorityKeyIdentifier  = keyid:always,issuer:always

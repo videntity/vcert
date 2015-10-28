@@ -228,7 +228,7 @@ ACCOUNT_REQUEST_TEXT = "Contact example@example.com for a code."
 
 
 # Not reccomended to adjust this part
-CA_COMMON_NAME ="ca.example.com"
+
 CA_BASE_DIR = "/opt/ca/"
 CA_CONF_DIR       = os.path.join( CA_BASE_DIR, 'conf/' )
 CA_PRIVATE_DIR    = os.path.join( CA_BASE_DIR, 'private/' )
@@ -236,12 +236,14 @@ CA_PUBLIC_DIR     = os.path.join( CA_BASE_DIR, 'public/' )
 CA_SIGNED_DIR     = os.path.join( CA_BASE_DIR, 'signed-keys/' )
 CA_COMPLETED_DIR  = os.path.join( CA_BASE_DIR, 'completed/' )
 CA_INPROCESS_DIR  = os.path.join( CA_BASE_DIR, 'inprocess/' )
+CA_INPROCESS_ANCHOR_DIR  = os.path.join( CA_INPROCESS_DIR, 'anchors/' )
 CA_CRL_DIR        = os.path.join( CA_BASE_DIR, 'crl/' )
 
 # The folowwing items can be adjusted.
-CA_PUBLIC_CERT    = os.path.join( CA_BASE_DIR, 'public/', "sampleca.example.com.pem" )
-CA_MAIN_CONF      = os.path.join( CA_CONF_DIR , "sampleca.example.com.cnf")
-
+CA_COMMON_NAME ="ca.example.com"
+CA_PUBLIC_CERT = os.path.join(CA_PUBLIC_DIR, CA_COMMON_NAME, ".pem")
+CA_MAIN_CONF      = os.path.join( CA_CONF_DIR , "root.cnf")
+CA_MAIN_SERIAL    = os.path.join( CA_CONF_DIR , "serial")
 
 AIA_FOR_TRUST_ANCHORS = "http://sampleca.example.com/aia/sampleca.example.com.der"
 INVALID_AIA_URL = "http://example.com/foo.der" #For endpoints
