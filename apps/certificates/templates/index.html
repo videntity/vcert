@@ -13,7 +13,7 @@
 </script>
 <script>$(document).ready(function(){$('[data-toggle="tooltip"]').tooltip();});
 </script>
-<link href="{{ STATIC_URL }}css/font-awesome-4.1.0/font-awesome.min.css" rel="stylesheet" type="text/css">
+
 
  <style type="text/css">
 
@@ -102,7 +102,7 @@
               
           <ul class="treeView" >
           <li>
-           <strong><a target=_blank href="http://ca.directca.org"
+           <strong><a href="aaa{{ ca_url2 }}"
            data-toggle="tooltip" title="View the root certificate's information.">{{ca_common_name}} (Root CA)</a></strong>          
           
           {% load mptt_tags %}
@@ -112,12 +112,10 @@
                     <li>
                  
                         <a  href="/certificates/view-anchor/{{ node.serial_number }}"
-                        data-toggle="tooltip" title="View the anchor and its endpoints. Opens in a new tab">
+                        data-toggle="tooltip" title="View the anchor and its endpoints.">
                              
                               {{ node.common_name }}
-                        
                         </a>
-                        
                         
                         {% if node.status == "good" %}
                         
@@ -130,7 +128,7 @@
                          </a> | 
                           
                           <a class="btn-danger btn-xs" href="/certificates/revoke-trust-anchor/{{node.serial_number}}">
-                              <i class="fa fa-hand-o-down"></i> {% trans "Revoke Self and Children"%}
+                              <i class="fa fa-warning"></i> {% trans "Revoke Self and Children"%}
                               </a>
                         
                         {% else %}

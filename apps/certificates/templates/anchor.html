@@ -5,9 +5,15 @@
 
 
 <div class="container">
+	  <div class="row">
+	   <div class="col-md-2 col-md-offset-5">
+			<h1>{{anchor.common_name}}</h1>
+			
+	   </div>
+	   </div>
+	  
       <div class="row">
-              
-              <h1>Anchors for:	{{anchor.common_name}}</h1>
+              <h2>Anchors</h2>
       </div>
 </div>
 
@@ -17,7 +23,7 @@
 			<table class="table">
 				  <thead>
 						<tr>
-							  <th>Common Name/DNS</th>
+							  <th>DNS/Common Name</th>
 							  <th>Category</th>
 							  <th>Details</th>
 							  <th>Downloads</th>
@@ -73,9 +79,9 @@
 						<strong>Serial Number:</strong>    {{ a.serial_number }} <br>
 						<strong>Created:</strong> {{a.creation_date}} <br>
 						<strong>Expires:</strong> {{a.expiration_date}}<br>
-						<strong>Status:</strong>  <a target="_blank"  href="{{a.public_cert_status_url}}">
+						<strong>Status:</strong>  <a   href="{{a.public_cert_status_url}}">
 						{{a.status}}</a> |
-						<a target="_blank"  href="{{a.public_cert_status_sha1_url}}">
+						<a  href="{{a.public_cert_status_sha1_url}}">
 						sha1-digest</a>
 						
 						<br>
@@ -95,11 +101,15 @@
 						<td>
 						  <a class="btn btn-success btn-small btn-block"
 							 href="/certificates/create-endpoint/{{a.serial_number}}">
-							<i class="icon-plus-sign icon-white"></i> Create an Endpoint Certificate</a>
+							<i class="fa fa-anchor"></i> Create an Endpoint Certificate</a>
+						  
+						  <a class="btn btn-primary btn-small btn-block"
+							 href="/certificates/create-intermediate-anchor/{{a.serial_number}}">
+							<i class="fa fa-hand-o-down"></i> Create Intermediate Anchor Certificate</a>
 						  
 						   <a class="btn btn-danger btn-small btn-block"
 							  href="/certificates/revoke-trust-anchor/{{a.serial_number}}">
-							<i class="icon-trash icon-white"></i> 
+							<i class="fa fa-warning"></i> 
 							Revoke Self & Children</a>
 						</td>
 						
@@ -141,7 +151,7 @@
   
   <div class="container">
       <div class="row">
-           <h1>{% trans "Descendant Endpoints" %}</h1>
+           <h2>{% trans "Descendant Endpoints" %}</h2>
 	  </div>
     
    </div>	
@@ -152,7 +162,7 @@
 		<table class="table">
 			<thead>
 				  <tr>
-				  <th>Email/DNS</th>
+				  <th>Email/DNS/Common Name</th>
 				  <th>Bound</th>
 				  <th>Details</th>
 				  <th>Downloads</th>
@@ -209,7 +219,7 @@
 			<td>
 			 
 				<a class="btn btn-danger btn-small btn-block"
-				   href="/certificates/revoke-endpoint/{{d.serial_number}}">
+				   href="/certificates/revoke-endpoint/{{e.serial_number}}">
 				  <i class="icon-trash icon-white"></i> 
 				  Revoke</a>
 		  
@@ -256,7 +266,7 @@
   
 <div class="container">
             <div class="row">
-                    <h1>{% trans "Revoked" %}</h1>
+                    <h2>{% trans "Revoked Descendant Anchors and Endpoints" %}</h2>
             </div>
     </div>
 
@@ -268,7 +278,8 @@
 			   
 				  <thead>
 						<tr>
-						<th>Email/DNS</th>
+						<th>Email/DNS/CN</th>
+						<th>Category</th>
 						<th>Status</th>
 						<th>SHA1 Fingerprint</th>
 						<th>Serial Number</th>
@@ -282,8 +293,11 @@
 					
 				  {% for c in revoked_cert_list %}
 					 
-				  <tr class="error">
+				  <tr class="danger">
 				  <td>{{ c.email }}</td>
+				  
+				  <td>{{ c.category }}</td>
+				  
 				  <td><a target="_blank"  href="{{c.public_cert_status_url}}">{{ c.status }}</a> |
 				  <a target="_blank"  href="{{c.public_cert_status_sha1_url}}">
 				  sha1-digest</a>
