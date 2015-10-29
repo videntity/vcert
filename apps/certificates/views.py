@@ -91,8 +91,6 @@ def view_anchor(request, serial_number):
     anchor = get_object_or_404(TrustAnchorCertificate, serial_number=serial_number,
                                owner = request.user)
     
-    
-    
     active_children=[]
     revoked_children=[]
     revoked_anchors=[]
@@ -130,7 +128,8 @@ def view_anchor(request, serial_number):
                                                              status="unverified"
                                                              )
     
-    
+    revoked_endpoints = DomainBoundCertificate.objects.filter(~Q(trust_anchor__parent = None),
+                                                             status="revoked")
     # DomainBoundCertificate.objects.filter(trust_anchor__parent=!None
     #                                                     status="good") | \
     #                     DomainBoundCertificate.objects.filter(trust_anchor=anchor,
@@ -151,8 +150,7 @@ def view_anchor(request, serial_number):
               'revoked_cert_list': revoked_certs, 
              }
     
-    return render_to_response('anchor.html',
-                              RequestContext(request, context,))
+    return render_to_response('anchor.html', RequestContext(request, context,))
 
 
 

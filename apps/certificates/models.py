@@ -18,7 +18,7 @@ import sha
 from fileutils import SimpleS3
 from django.core.mail import send_mail, EmailMessage
 from shutil import copyfile
-
+from django.forms.models import model_to_dict
 import mptt.utils
 
 from mptt.models import MPTTModel, TreeForeignKey
@@ -152,6 +152,14 @@ class TrustAnchorCertificate(MPTTModel):
         if self.parent:
             return True
         return False
+    
+    def category(self):
+        if self.parent:
+            return "Intermediate"
+        return "Top Anchor"
+        
+    
+    
     
     class Meta:
         get_latest_by = "creation_date"
@@ -506,7 +514,7 @@ class TrustAnchorCertificate(MPTTModel):
             
             self.verified_message_sent = True
         
-            
+        #REVOKE --------------------------------------------------------------------------------------------    
         if self.revoke and self.status != "revoked":
                 self.status = "revoked"
                 
@@ -601,54 +609,54 @@ class TrustAnchorCertificate(MPTTModel):
             
         super(TrustAnchorCertificate, self).save(**kwargs)
         
-    def delete(self, **kwargs):
-        self.revoked = True
-        self.status = "revoked"
-    
-        # Build the RCSP response
-        rcsp_result = write_verification_message(self.serial_number,
-                                             self.common_name,
-                                            "revoked",
-                                            self.sha1_fingerprint,
-                                            )
-        #Write it to db
-        self.rcsp_response = rcsp_result
-        fn = "%s.json" % (self.serial_number)
-        #Write it to file
-        fp = os.path.join(self.completed_dir_path, fn)
-        
-        f = open(fp, "w")
-        f.write(str(rcsp_result))
-        f.close()
-        
-        #Upload the RCSP file to S3
-        s=SimpleS3()
-        if "S3" in settings.CA_PUBLICATION_OPTIONS:
-            url = s.store_in_s3(fn, fp, bucket=settings.RCSP_BUCKET,
-                            public=True)
-
-            
-        #Calculate the SHA1 fingerprint & write it to a file
-        digestsha1 = json.dumps(sha.sha1_from_filepath(fp), indent =4)
-        fn = "%s-sha1.json" % (self.serial_number)
-        fp = os.path.join(self.completed_dir_path, fn)
-        f = open(fp, "w")
-        f.write(str(digestsha1)) 
-        f.close()
-            
-        #Upload the RCSP SHA! Digest to S3
-        if "S3" in settings.CA_PUBLICATION_OPTIONS:
-            url = s.store_in_s3(fn, fp, bucket=settings.RCSPSHA1_BUCKET,
-                            public=True)
-        
-        #Revoke the cert.
-        revoke(self)
-        super(TrustAnchorCertificate, self).save(**kwargs)
+    # def delete(self, **kwargs):
+    #     self.revoked = True
+    #     self.status = "revoked"
+    # 
+    #     # Build the RCSP response
+    #     rcsp_result = write_verification_message(self.serial_number,
+    #                                          self.common_name,
+    #                                         "revoked",
+    #                                         self.sha1_fingerprint,
+    #                                         )
+    #     #Write it to db
+    #     self.rcsp_response = rcsp_result
+    #     fn = "%s.json" % (self.serial_number)
+    #     #Write it to file
+    #     fp = os.path.join(self.completed_dir_path, fn)
+    #     
+    #     f = open(fp, "w")
+    #     f.write(str(rcsp_result))
+    #     f.close()
+    #     
+    #     #Upload the RCSP file to S3
+    #     s=SimpleS3()
+    #     if "S3" in settings.CA_PUBLICATION_OPTIONS:
+    #         url = s.store_in_s3(fn, fp, bucket=settings.RCSP_BUCKET,
+    #                         public=True)
+    # 
+    #         
+    #     #Calculate the SHA1 fingerprint & write it to a file
+    #     digestsha1 = json.dumps(sha.sha1_from_filepath(fp), indent =4)
+    #     fn = "%s-sha1.json" % (self.serial_number)
+    #     fp = os.path.join(self.completed_dir_path, fn)
+    #     f = open(fp, "w")
+    #     f.write(str(digestsha1)) 
+    #     f.close()
+    #         
+    #     #Upload the RCSP SHA! Digest to S3
+    #     if "S3" in settings.CA_PUBLICATION_OPTIONS:
+    #         url = s.store_in_s3(fn, fp, bucket=settings.RCSPSHA1_BUCKET,
+    #                         public=True)
+    #     
+    #     #Revoke the cert.
+    #     revoke(self)
+    #     super(TrustAnchorCertificate, self).save(**kwargs)
         
 
 class DomainBoundCertificate(models.Model):
     trust_anchor      = models.ForeignKey(TrustAnchorCertificate)
-    common_name       = models.CharField(max_length=512, default=uuid_default_common_name, unique=True)
+    common_name       = models.CharField(max_length=512, default=uuid_default_common_name)
     
     
     status            = models.CharField(max_length=10, default="incomplete",
@@ -774,6 +782,12 @@ class DomainBoundCertificate(models.Model):
         if self.common_name.__contains__("@"):
             return "Email"
         return "Domain"
+
+    def category(self):
+       if self.common_name.__contains__("@"):
+            return "Email Bound Endpoint"
+       return "Domain Bound Endpoint"
+
     
     def is_email_bound(self):
         if self.common_name.__contains__("@a"):
@@ -1178,7 +1192,7 @@ class DomainBoundCertificate(models.Model):
             self.verified_message_sent = True
             super(DomainBoundCertificate, self).save(**kwargs)
             return
-        
+        # REVOKED ------------------------------------------------------------------
         if self.revoke and self.status != "revoked":
             self.revoke = True
             self.status = "revoked"
@@ -1265,52 +1279,58 @@ class DomainBoundCertificate(models.Model):
             # Now perform the revocation on our index and delete old files.
             revoke_from_anchor(self)
             revoke(self)
+
         
          
         super(DomainBoundCertificate, self).save(**kwargs)
 
-    def delete(self, **kwargs):
-        self.revoke = True
-        self.status = "revoked"
-         # Get the response
-        rcsp_result = write_verification_message(self.serial_number,
-                                                 self.common_name,
-                                                "revoked",
-                                                self.sha1_fingerprint,
-                                                )
-        #Write it to db
-        self.rcsp_response = rcsp_result
-        fn = "%s.json" % (self.serial_number)
-        #Write it to file
-        fp = os.path.join(settings.CA_INPROCESS_DIR, fn)
-        
-        f = open(fp, "w")
-        f.write(str(rcsp_result))
-        f.close()
-        
-        #Upload the RCSP file to S3
-        s=SimpleS3()
-        if "S3" in settings.CA_PUBLICATION_OPTIONS:
-            url = s.store_in_s3(fn, fp, bucket=settings.RCSP_BUCKET,
-                            public=True)
+    # def delete(self, **kwargs):
+    #     self.revoke = True
+    #     self.status = "revoked"
+    #      # Get the response
+    #     rcsp_result = write_verification_message(self.serial_number,
+    #                                              self.common_name,
+    #                                             "revoked",
+    #                                             self.sha1_fingerprint,
+    #                                             )
+    #     #Write it to db
+    #     self.rcsp_response = rcsp_result
+    #     fn = "%s.json" % (self.serial_number)
+    #     #Write it to file
+    #     fp = os.path.join(settings.CA_INPROCESS_DIR, fn)
+    #     
+    #     f = open(fp, "w")
+    #     f.write(str(rcsp_result))
+    #     f.close()
+    #     
+    #     #Upload the RCSP file to S3
+    #     s=SimpleS3()
+    #     if "S3" in settings.CA_PUBLICATION_OPTIONS:
+    #         url = s.store_in_s3(fn, fp, bucket=settings.RCSP_BUCKET,
+    #                         public=True)
+    # 
+    #         
+    #     #Calculate the SHA1 fingerprint & write it to a file
+    #     digestsha1 = json.dumps(sha.sha1_from_filepath(fp), indent =4)
+    #     fn = "%s-sha1.json" % (self.serial_number)
+    #     fp = os.path.join(settings.CA_INPROCESS_DIR, fn)
+    #     f = open(fp, "w")
+    #     f.write(str(digestsha1)) 
+    #     f.close()
+    #         
+    #     #Upload the RCSP SHA1 Digest to S3
+    #     if "S3" in settings.CA_PUBLICATION_OPTIONS:
+    #         url = s.store_in_s3(fn, fp, bucket=settings.RCSPSHA1_BUCKET,
+    #                         public=True)
+    #     revoke_from_anchor(self)
+    #     revoke(self)
+    #     
+    #     super(DomainBoundCertificate, self).save(**kwargs)
 
-            
-        #Calculate the SHA1 fingerprint & write it to a file
-        digestsha1 = json.dumps(sha.sha1_from_filepath(fp), indent =4)
-        fn = "%s-sha1.json" % (self.serial_number)
-        fp = os.path.join(settings.CA_INPROCESS_DIR, fn)
-        f = open(fp, "w")
-        f.write(str(digestsha1)) 
-        f.close()
-            
-        #Upload the RCSP SHA! Digest to S3
-        if "S3" in settings.CA_PUBLICATION_OPTIONS:
-            url = s.store_in_s3(fn, fp, bucket=settings.RCSPSHA1_BUCKET,
-                            public=True)
-        revoke_from_anchor(self)
-        revoke(self)
-        
-        super(DomainBoundCertificate, self).save(**kwargs)
+class RevokedDomainBoundCertificate(DomainBoundCertificate):
+    pass
+
+
 
 
 class CertificateRevocationList(models.Model):
@@ -1356,4 +1376,28 @@ class AnchorCertificateRevocationList(models.Model):
         self.url = build_anchor_crl(self.trust_anchor)
     
         super(AnchorCertificateRevocationList, self).save(**kwargs)
-    
+
+
+
+
+
+def update_model(src, dest):
+    """
+    Update one model with the content of another.
+
+    When it comes to Foreign Keys, they need to be
+    encoded using models and not the IDs as
+    returned from model_to_dict.
+
+    :param src: Source model instance.
+    :param dest: Destination model instance.
+    """
+    src_dict = model_to_dict(src, exclude="id")
+    for k, v in src_dict.iteritems():
+        if isinstance(v, long):
+            m = getattr(src, k, None)
+            if isinstance(m, models.Model):
+                setattr(dest, k, m)
+                continue
+
+        setattr(dest, k, v)
