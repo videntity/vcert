@@ -296,14 +296,14 @@ class TrustAnchorCertificate(MPTTModel):
             f.write(str(rcsp_result))
             f.close()
             
-            #Upload the RCSP file to S3
-            if "S3" in settings.CA_PUBLICATION_OPTIONS:
-                s=SimpleS3()
-                self.public_cert_status_url  = s.store_in_s3(fn, fp,
-                                    bucket=settings.RCSP_BUCKET, public=True)
-                self.public_cert_status_url = s.build_pretty_url(
-                                                     self.public_cert_status_url,
-                                                    settings.RCSP_BUCKET)
+            # #Upload the RCSP file to S3
+            # if "S3" in settings.CA_PUBLICATION_OPTIONS:
+            #     s=SimpleS3()
+            #     self.public_cert_status_url  = s.store_in_s3(fn, fp,
+            #                         bucket=settings.RCSP_BUCKET, public=True)
+            #     self.public_cert_status_url = s.build_pretty_url(
+            #                                          self.public_cert_status_url,
+            #                                         settings.RCSP_BUCKET)
             #Upload the RCSP locally
             if "LOCAL" in  settings.CA_PUBLICATION_OPTIONS:   
                 dest = os.path.join(settings.LOCAL_RCSP_PATH, self.owner.username, self.dns)
@@ -418,12 +418,32 @@ class TrustAnchorCertificate(MPTTModel):
                 # print "DESTFILE", dest_file
                 
                 
-                os.umask(0000)
-                copyfile(fp, dest_file)
-                os.chdir(self.completed_dir_path)
-                self.public_cert_x5c_url = "%s/%s" % (settings.CHAIN_URL_PREFIX,  fn)
+                # os.umask(0000)
+                # copyfile(fp, dest_file)
+                # os.chdir(self.completed_dir_path)
+                # self.public_cert_x5c_url = "%s/%s" % (settings.CHAIN_URL_PREFIX,  fn)
+                # 
                 
-
+                # AIA ------------------------------------
+                if self.parent:
+                    print "AIA ------------------------------------"
+                    
+                    if "LOCAL" in  settings.CA_PUBLICATION_OPTIONS:   
+                        fn = "%s.der" % (self.parent.common_name)
+                        #Copy the X5c-------------------------------
+                        dest = os.path.join(settings.LOCAL_AIA_PATH)
+                        if not os.path.exists(dest):
+                            os.makedirs(dest)
+        
+                        dest_file = os.path.join(dest, fn)
+                        print "DESTFILE", dest_file
+                        
+                        
+                        os.umask(0000)
+                        
+                        os.chdir(self.parent.completed_dir_path)
+                        copyfile(fn, dest_file)
+                        self.public_cert_x5c_url = "%s/%s" % (settings.X5C_URL_PREFIX,  fn)
               
             #Upload the PEM and DER public certificates  -----------------------
             
@@ -1409,25 +1429,3 @@ class AnchorCertificateRevocationList(models.Model):
 
 
 
-
-
-def update_model(src, dest):
-    """
-    Update one model with the content of another.
-
-    When it comes to Foreign Keys, they need to be
-    encoded using models and not the IDs as
-    returned from model_to_dict.
-
-    :param src: Source model instance.
-    :param dest: Destination model instance.
-    """
-    src_dict = model_to_dict(src, exclude="id")
-    for k, v in src_dict.iteritems():
-        if isinstance(v, long):
-            m = getattr(src, k, None)
-            if isinstance(m, models.Model):
-                setattr(dest, k, m)
-                continue
-
-        setattr(dest, k, v)
