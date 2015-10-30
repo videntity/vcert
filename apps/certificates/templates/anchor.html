@@ -2,21 +2,43 @@
 {% block content %}
 
 {% load i18n %}
+ {% load mptt_tags %}
+
+
 
 
 <div class="container">
-	  <div class="row">
-	   <div class="col-md-2 col-md-offset-5">
-			<h1>{{anchor.common_name}}</h1>
+	  
+
+
+      <div class="row">
 			
-	   </div>
-	   </div>
+			
+
+			<ul class="breadcrumb">
+		
+				<li><a href="/">{{ca_common_name}}</a></li>
+					
+					{% for parent in anchor.get_ancestors %}
+					 <li> <a href="/certificates/view-anchor/{{ parent.serial_number }}">{{ parent.common_name }}</a></li>
+					{% endfor %}
+				   
+		
+				<li class="active">{{anchor.common_name}}</li>
+		
+			 </ul>
+      </div>
+
+
+
+
 	  
       <div class="row">
               <h2>Anchors</h2>
       </div>
 </div>
 
+			
 
 <div class="container">
       <div class="row">
@@ -75,7 +97,6 @@
 												   </a>
 											{% endif %}
 						<br>
-						
 						<strong>Serial Number:</strong>    {{ a.serial_number }} <br>
 						<strong>Created:</strong> {{a.creation_date}} <br>
 						<strong>Expires:</strong> {{a.expiration_date}}<br>
@@ -93,7 +114,11 @@
 						  <strong> Public:</strong>
 						   <a target="_blank" href="{{a.public_cert_der_url}}">der </a>|
 						   <a target="_blank" href="{{a.public_cert_pem_url}}">pem </a>|
-						   <a target="_blank" href="{{a.public_cert_x5c_url}}">json</a><br>
+						   <a target="_blank" href="{{a.public_cert_x5c_url}}">json </a><br>
+						 
+						<strong>CRL:</strong> <a href = "{{a.crl_url}}">crl</a> (der)<br>
+						<strong>AIA:</strong> <a href="{{a.aia_url}}">der</a><br>
+						 
 						 
 						</td>
 						
@@ -125,17 +150,12 @@
 							  {% else %}
 									<em>Verifiction in progress.</em>
 							  {% endif %}
-							  
-							  
+							    
 							 </td>
-						   
-						   
+						    
 						   {% endif %}
 						  
-						
 						</tr>
-						
-						
 						
 						{% endfor %}
 						

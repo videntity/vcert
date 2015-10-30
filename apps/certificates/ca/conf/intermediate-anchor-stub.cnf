@@ -18,9 +18,9 @@ commonName              = |COMMON_NAME|
 subjectKeyIdentifier    = hash
 #subjectAltName          = @alt_names
 authorityKeyIdentifier  = keyid:always,issuer:always
-basicConstraints        = critical, CA:true
-keyUsage                = critical, keyCertSign, cRLSign
-crlDistributionPoints   = URI:http://ca.directca.org/crl/|ANCHORDNS|.crl
+basicConstraints        = CA:true
+keyUsage                = keyCertSign, cRLSign
+crlDistributionPoints   = URI:|CRL_URL|
 
 
 #[alt_names]
@@ -47,7 +47,6 @@ default_md              = sha256
 preserve                = no
 policy                  = policy_match
 
-
 [ policy_match ]
 countryName             = match
 stateOrProvinceName     = supplied
@@ -57,13 +56,16 @@ organizationalUnitName  = optional
 commonName              = supplied
 emailAddress            = supplied
 
+
 [ usr_cert ]
 subjectAltName          = DNS: |DNS|
 subjectKeyIdentifier    = hash
 authorityKeyIdentifier  = keyid:always #, issuer:always
 keyUsage                = digitalSignature, keyEncipherment
-crlDistributionPoints   = URI:http://ca.directca.org/crl/|ANCHORDNS|.crl
-authorityInfoAccess     = caIssuers;URI:|AIA-DER|
+crlDistributionPoints   = URI:|CRL_URL|            #.der
+authorityInfoAccess     = caIssuers;URI:|AIA_URL|  #.der
+
+
 
 [ crl_ext ]
 authorityKeyIdentifier  = keyid:always,issuer:always
