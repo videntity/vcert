@@ -95,9 +95,6 @@
 						<strong>Serial Number:</strong>    {{ a.serial_number }} <br>
 						<strong>Created:</strong> {{a.creation_date}} <br>
 						<strong>Expires:</strong> {{a.expiration_date}}<br>
-						<strong>CRL:</strong> <a href = "{{a.crl_url}}">crl</a> (der)<br>
-						<strong>AIA:</strong> <a href="{{a.aia_url}}">der</a><br>
-						
 						<strong>Status:</strong>  <a   href="{{a.public_cert_status_url}}">
 						{{a.status}}</a>
 						<a  href="{{a.public_cert_status_sha1_url}}">
