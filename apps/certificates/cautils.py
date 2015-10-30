@@ -335,13 +335,17 @@ def create_trust_anchor_certificate(common_name     = "example.com",
         error, output = sedswap("|ANCHORDNS|", parent.common_name,  conf_stub_file_name)
         error, output = sedswap("|PRIVATE_KEY|", parent.private_key_path,  this_conf)
     
+    
+
     if include_aia:
  
         if not parent: 
             #Points to a DER.
             aia_url = settings.CA_URL + "aia/" + settings.CA_COMMON_NAME + ".der"
         else:
-            aia_url = parent.aia_url
+            aia_url = aia_url
+            
+        
         error, output = sedswap("|AIA_URL|", aia_url,  this_conf)
         
     else:
