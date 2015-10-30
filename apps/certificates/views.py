@@ -153,7 +153,6 @@ def view_anchor(request, serial_number):
     return render_to_response('anchor.html', RequestContext(request, context,))
 
 
-
 @login_required
 def create_endpoint_certificate(request, serial_number):
     ta = get_object_or_404(TrustAnchorCertificate, serial_number=serial_number,

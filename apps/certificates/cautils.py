@@ -84,7 +84,10 @@ def write_x5c_message(name, x5ckeys):
 def build_crl():
     url = ""
     password = "pass:" + settings.PRIVATE_PASSWORD
-    crl_file = os.path.join(settings.CA_CRL_DIR, settings.CRL_FILENAME)
+    crl_file = settings.LOCAL_ROOT_CRL_PATH
+    print "CRL_FILE", crl_file
+    
+    
     call(["openssl", "ca", "-config",  settings.CA_MAIN_CONF ,  "-crlexts", "crl_ext", "-gencrl", "-out",
           crl_file, "-passin", password])
     
@@ -97,10 +100,10 @@ def build_crl():
 
     if "LOCAL" in settings.CA_PUBLICATION_OPTIONS:
         os.umask(0000)
-        print "copy", crl_file, settings.LOCAL_CRL_PATH
-        copyfile(crl_file, os.path.join(settings.LOCAL_CRL_PATH, settings.CRL_FILENAME))
+        #print "copy", crl_file, settings.LOCAL_CRL_PATH
+        #copyfile(crl_file, os.path.join(settings.LOCAL_CRL_PATH, settings.CRL_FILENAME))
         os.chdir(settings.BASE_DIR)
-        url = os.path.join(settings.LOCAL_CRL_PATH, crl_file)
+        url = settings.CA_ROOT_CRL_URL
 
     if url:
         print "Completed upload @ %s. Archive URL = %s" % (datetime.now(), url)
@@ -108,7 +111,7 @@ def build_crl():
         print "Upload failed @ %s"
         url= "Failed"
         
-    return url
+    return url, crl_file
 
 
 def build_anchor_crl(trust_anchor):
@@ -123,14 +126,15 @@ def build_anchor_crl(trust_anchor):
         s=SimpleS3()
         key = "crl/" + crl_file
         url = s.store_in_s3(key, crl_path,
-                        bucket=settings.CRL_BUCKET, public=True)
+                        bucket=settings.CRL_BUCKET,
+                        public=True)
     
     if "LOCAL" in settings.CA_PUBLICATION_OPTIONS:
         os.umask(0000)
-        print "copy", crl_path, settings.LOCAL_CRL_PATH
+        #print "copy", crl_path, settings.LOCAL_CRL_PATH
         copyfile(crl_path, os.path.join(settings.LOCAL_CRL_PATH, crl_file))
         os.chdir(settings.BASE_DIR)
-        url = os.path.join(settings.LOCAL_CRL_PATH, crl_file) 
+        url = os.path.join(settings.CRL_URL_PREFIX, crl_file) 
 
     if url:
         print "Completed upload @ %s. Archive URL = %s" % (datetime.now(), url)
@@ -138,7 +142,7 @@ def build_anchor_crl(trust_anchor):
         print "Upload failed @ %s"
         url= "Failed"
         
-    return url
+    return url, crl_path
 
 
 def revoke(cert):
@@ -206,6 +210,8 @@ def create_trust_anchor_certificate(common_name     = "example.com",
                 "completed_dir_path":                 "",
                 "aia_url":                            "",
                 "crl_url":                            "",
+                "chain_url":                            "",
+                "x5c_url":                            "",
                 }
     
     dirname = str(uuid.uuid4())[0:5]
@@ -229,7 +235,7 @@ def create_trust_anchor_certificate(common_name     = "example.com",
         completed_user_intermediate_dir = os.path.join(completed_this_anchor_dir, "intermediates")
         crl_url                         = settings.CA_ROOT_CRL_URL
         aia_url                         = settings.CA_ROOT_AIA_URL
-        print crl_url, aia_url
+        
         
         # os.path.join(settings.CA_COMPLETED_DIR, user )
         
@@ -254,8 +260,13 @@ def create_trust_anchor_certificate(common_name     = "example.com",
         copyfile(os.path.join(settings.CA_CONF_DIR, "intermediate-anchor-stub.cnf"),
                  conf_stub_file_name)
         this_conf = os.path.join(this_dir, conf_stub_file_name)
-        crl_url                         = settings.CRL_URL_PREFIX + "/" + user + "/"+ parent.common_name + ".crl"
-        aia_url                         = settings.AIA_URL_PREFIX + "/" + user + "/"+ parent.common_name + ".der"
+        crl_url                         = settings.CRL_URL_PREFIX + parent.common_name + ".crl"
+        aia_url                         = settings.AIA_URL_PREFIX +  parent.common_name + ".der"
+    
+    chain_url                       = settings.CHAIN_URL_PREFIX  + common_name + "-chain.pem"
+    x5c_url                         = settings.X5C_URL_PREFIX +  common_name + "-x5c.json"
+        
+        
         
     #print "COMPLETED PATH IS: ",  completed_this_anchor_dir
 
@@ -468,7 +479,10 @@ def create_trust_anchor_certificate(common_name     = "example.com",
                    "public_key_path": public_key_path_pem,
                    "completed_dir_path": completed_this_anchor_dir,
                    "aia_url":  aia_url,
-                   "crl_url": crl_url})
+                   "crl_url": crl_url,
+                   "chain_url":  chain_url,
+                   "x5c_url": x5c_url
+                   })
     
     # Get back to the directory we started.
     os.chdir(settings.BASE_DIR) 
@@ -835,7 +849,7 @@ def create_endpoint_certificate(common_name     = "foo.example.com",
 
 
 
-def create_crl_conf(common_name     = "foo.bar.org",
+def create_crl_conf(common_name     = "foo.example.com",
                     email           = "foo.bar.org",
                     dns             = "foo.bar.org",
                     anchor_dns      = "bar.org",

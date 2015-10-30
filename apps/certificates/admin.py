@@ -53,17 +53,17 @@ admin.site.register(TreeViewAnchorCertificate, TreeViewAdmin)
 
 class CertificateRevocationListAdmin(admin.ModelAdmin):
     
-    list_display = ('url', 'creation_date', 'creation_datetime')
+    list_display = ( 'url', 'local_path', 'creation_date', 'creation_datetime')
     
-    search_fields =('url', 'creation_date', 'creation_datetime')
+    search_fields =('url', 'local_path','creation_date', 'creation_datetime')
     
 admin.site.register(CertificateRevocationList, CertificateRevocationListAdmin)
 
 
 class AnchorCertificateRevocationListAdmin(admin.ModelAdmin):
     
-    list_display = ('url', 'creation_date', 'creation_datetime')
+    list_display = ('trust_anchor','url', 'local_path', 'creation_date', 'creation_datetime')
     
-    search_fields =('url', 'creation_date', 'creation_datetime')
+    search_fields =('trust_anchor','url', 'local_path', 'creation_date', 'creation_datetime')
     
 admin.site.register(AnchorCertificateRevocationList, AnchorCertificateRevocationListAdmin)

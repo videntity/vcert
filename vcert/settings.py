@@ -211,16 +211,17 @@ AWS_BUCKET =''
 
 
 #Org  and CA Settings -----------------------------------------------------
+# Send outbound emails such as #verification notification and more
+SEND_CA_EMAIL       = False
 ORGANIZATION_NAME = "Sample-CA"
-CA_COMMON_NAME = "ca.example.com"
+CA_COMMON_NAME = "ca.directca.org"
 LOCATION_NAME = "Anywhere, USA"
 GLOBAL_TITLE = "caconsole.example.com"
 CA_VERIFIER_EMAIL = "verifier@example.com"
 CA_HOSTNAME = "localhost:8000/static"
 CA_URL = 'http://%s/' % (CA_HOSTNAME)
 
-# Send outbound emails such as #verification notification and more
-SEND_CA_EMAIL       = True
+
 
 CA_PUBLICATION_OPTIONS = ("LOCAL", "S3") #Valid options are "LOCAL" and "S3".
 
@@ -228,56 +229,73 @@ ACCOUNT_REQUEST_TEXT = "Contact example@example.com for a code."
 
 # Not reccomended to adjust this part
 
+#CA Directory structure -------------------------------------------
 CA_BASE_DIR = "/opt/ca/"
 CA_CONF_DIR              = os.path.join( CA_BASE_DIR, 'conf/' )
+CA_MAIN_CONF      = os.path.join( CA_CONF_DIR , "root.cnf")
+CA_MAIN_SERIAL    = os.path.join( CA_CONF_DIR , "serial")
 CA_PRIVATE_DIR           = os.path.join( CA_BASE_DIR, 'private/' )
 CA_PUBLIC_DIR            = os.path.join( CA_BASE_DIR, 'public/' )
 CA_SIGNED_DIR            = os.path.join( CA_BASE_DIR, 'signed-keys/' )
 CA_COMPLETED_DIR         = os.path.join( CA_BASE_DIR, 'completed/' )
 CA_INPROCESS_DIR         = os.path.join( CA_BASE_DIR, 'inprocess/' )
 CA_INPROCESS_ANCHOR_DIR  = os.path.join( CA_INPROCESS_DIR, 'anchors/' )
-CA_CRL_DIR               = os.path.join( CA_BASE_DIR, 'crl/' )
+CA_INPROCESS_ENDPOINTS_DIR  = os.path.join( CA_INPROCESS_DIR, 'endpoints/' )
+CA_PUBLIC_CERT_NAME      = "%s.pem" % (CA_COMMON_NAME)
+CA_PUBLIC_CRL_NAME       = "%s.crl" % (CA_COMMON_NAME)
+CA_PUBLIC_AIA_NAME       = "%s.der" % (CA_COMMON_NAME)
 
 
+#Published Local Filesystem
+#LOCAL_CRL_PATH           = os.path.join(BASE_DIR, 'sitestatic', 'crl')
+LOCAL_ROOT_CRL_PATH      = os.path.join(BASE_DIR, 'sitestatic', 'crl/', CA_PUBLIC_CRL_NAME )
+LOCAL_ROOT_AIA_PATH      = os.path.join(BASE_DIR, 'sitestatic', 'aia/', CA_PUBLIC_CERT_NAME )
+LOCAL_CRL_PATH           = os.path.join(BASE_DIR, 'sitestatic', 'crl')
+LOCAL_AIA_PATH           = os.path.join(BASE_DIR, 'sitestatic', 'aia')
+LOCAL_PUBLIC_PATH        = os.path.join(BASE_DIR, 'sitestatic', 'public')
+LOCAL_PRIVATE_PATH       = os.path.join(BASE_DIR, 'sitestatic', 'private')
+LOCAL_RCSP_PATH          = os.path.join(BASE_DIR, 'sitestatic', 'rcsp')
+LOCAL_RCSPSHA1_PATH      = os.path.join(BASE_DIR, 'sitestatic', 'rcsp-sha1')
+LOCAL_X5C_PATH           = os.path.join(BASE_DIR, 'sitestatic', 'x5c')
 
 
-PUBLIC_CERTS_URL_PREFIX     = '%s%s/' % (CA_URL, "public")
-CRL_URL_PREFIX              = '%s%s/' % (CA_URL, "crl")
+#URLS for certs. aia, crl, etc.-----------------------------------------------
+
+CRL_URL_PREFIX              = '%s%s/'    % (CA_URL, "crl")
 CA_ROOT_CRL_URL             = '%s%s.crl' % (CRL_URL_PREFIX, CA_COMMON_NAME)
 CA_ROOT_AIA_URL             = '%s%s.der' % (CRL_URL_PREFIX, CA_COMMON_NAME)
-AIA_URL_PREFIX              = '%s%s/' % (CA_URL, "aia")
-PRIVATE_URL_PREFIX          = '%s%s/' % (CA_URL, "private")
-RCSP_URL_PREFIX             = '%s%s/' % (CA_URL, "rcsp")
-RCSPSHA1_URL_PREFIX         = '%s%s/' % (CA_URL, "rcsp-sha1")
-X5C_URL_PREFIX              = '%s%s/' % (CA_URL, "x5c")
+AIA_URL_PREFIX              = '%s%s/'    % (CA_URL, "aia")
+PRIVATE_URL_PREFIX          = '%s%s/'    % (CA_URL, "private")
+RCSP_URL_PREFIX             = '%s%s/'    % (CA_URL, "rcsp")
+RCSPSHA1_URL_PREFIX         = '%s%s/'    % (CA_URL, "rcsp-sha1")
+X5C_URL_PREFIX              = '%s%s/'    % (CA_URL, "x5c")
+CHAIN_URL_PREFIX            = '%s%s/'    % (CA_URL, "chain")
 
 
 
-# The folowwing items can be adjusted.
-CA_COMMON_NAME ="ca.example.com"
-CA_PUBLIC_CERT = os.path.join(CA_PUBLIC_DIR, CA_COMMON_NAME, ".der")
-CA_MAIN_CONF      = os.path.join( CA_CONF_DIR , "root.cnf")
-CA_MAIN_SERIAL    = os.path.join( CA_CONF_DIR , "serial")
 
-AIA_FOR_TRUST_ANCHORS = "http://sampleca.example.com/aia/sampleca.example.com.der"
+
+
+#Generate CRLs in site static
+
+
+
+
 INVALID_AIA_URL = "http://example.com/foo.der" #For endpoints
 # The S3 bucket for the certificate revocation lists.  This "webserver" is
 # used by all trust anchors.
-CRL_BUCKET          = "ca.example.com"
 
+
+#S3 Settings -------------------------------------
+CRL_BUCKET          = "ca.example.com"
 #A bucket for the X5C certificate chain
 X5C_BUCKET          = "pubcerts.example.com"
-
 #A bucket for public certs in pem, dir and x12 formats.
 PUBCERT_BUCKET      = "pubcerts.example.com"
-
 # A bucket for private certificates
 PRIVCERT_BUCKET     = "privcerts.example.com"
-
 # A bucket to contain a JSON representation of the certificate revocation status
 RCSP_BUCKET         = "rcsp.example.com"
-
-
 RCSPSHA1_BUCKET     = "rcspsha1.example.com"
 
 

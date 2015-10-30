@@ -33,7 +33,7 @@ urlpatterns = patterns('',
     
     url(r'view-anchor/(?P<serial_number>\S+)', view_anchor,
                         name="verify_anchor_certificate"),   
-    url(r'$', certificate_dashboard,
-                       name="certificate_dashboard"),
+    #url(r'$', certificate_dashboard,
+    #                   name="certificate_dashboard"),
     
     )

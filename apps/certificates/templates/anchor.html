@@ -17,7 +17,7 @@
 
 			<ul class="breadcrumb">
 		
-				<li><a href="/">{{ca_common_name}}</a></li>
+				<li><a href="/">Home</a></li>
 					
 					{% for parent in anchor.get_ancestors %}
 					 <li> <a href="/certificates/view-anchor/{{ parent.serial_number }}">{{ parent.common_name }}</a></li>
@@ -54,11 +54,6 @@
 				  </thead>
 			 
 				  <tbody>
-	  
-	  
-	  
-	  
-	  
 						
 						{% for a in active_cert_list %}
 						
@@ -100,8 +95,11 @@
 						<strong>Serial Number:</strong>    {{ a.serial_number }} <br>
 						<strong>Created:</strong> {{a.creation_date}} <br>
 						<strong>Expires:</strong> {{a.expiration_date}}<br>
+						<strong>CRL:</strong> <a href = "{{a.crl_url}}">crl</a> (der)<br>
+						<strong>AIA:</strong> <a href="{{a.aia_url}}">der</a><br>
+						
 						<strong>Status:</strong>  <a   href="{{a.public_cert_status_url}}">
-						{{a.status}}</a> |
+						{{a.status}}</a>
 						<a  href="{{a.public_cert_status_sha1_url}}">
 						sha1-digest</a>
 						
@@ -114,7 +112,7 @@
 						  <strong> Public:</strong>
 						   <a target="_blank" href="{{a.public_cert_der_url}}">der </a>|
 						   <a target="_blank" href="{{a.public_cert_pem_url}}">pem </a>|
-						   <a target="_blank" href="{{a.public_cert_x5c_url}}">json </a><br>
+						   <a target="_blank" href="{{a.x5c_url}}">json </a><br>
 						 
 						<strong>CRL:</strong> <a href = "{{a.crl_url}}">crl</a> (der)<br>
 						<strong>AIA:</strong> <a href="{{a.aia_url}}">der</a><br>
