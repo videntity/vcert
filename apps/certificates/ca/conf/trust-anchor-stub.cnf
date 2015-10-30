@@ -17,8 +17,8 @@ commonName              = |COMMON_NAME|
 [ v3_ca ]
 subjectKeyIdentifier    = hash
 authorityKeyIdentifier  = keyid:always,issuer:always
-basicConstraints        = critical, CA:true
-keyUsage                = critical, keyCertSign, cRLSign
+basicConstraints        = CA:true
+keyUsage                = keyCertSign, cRLSign
 crlDistributionPoints   = URI:http://ca.directca.org/crl/ca.directca.org.crl
 
 [ ca ]
@@ -54,8 +54,8 @@ basicConstraints        = CA:true
 subjectKeyIdentifier    = hash
 authorityKeyIdentifier  = keyid ,issuer:always
 keyUsage                = digitalSignature, keyCertSign, cRLSign
-crlDistributionPoints   = URI:http://ca.directca.org/crl/|COMMON_NAME|.crl
-authorityInfoAccess     = caIssuers;URI:|AIA_FOR_TRUST_ANCHORS|
+crlDistributionPoints   = URI:|CRL_URL|            #.der
+authorityInfoAccess     = caIssuers;URI:|AIA_URL|  #.der
 
 [ crl_ext ]
 authorityKeyIdentifier  = keyid:always,issuer:always

@@ -768,7 +768,6 @@ class DomainBoundCertificate(models.Model):
     creation_date               = models.DateField(auto_now_add=True)
     
 
-    
     def __unicode__(self):
         return '%s (%s) Status=%s, Created %s, Issued by %s' % (self.domain,
                             self.serial_number, self.status,  self.creation_date,

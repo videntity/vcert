@@ -75,7 +75,6 @@
 												   </a>
 											{% endif %}
 						<br>
-						
 						<strong>Serial Number:</strong>    {{ a.serial_number }} <br>
 						<strong>Created:</strong> {{a.creation_date}} <br>
 						<strong>Expires:</strong> {{a.expiration_date}}<br>
@@ -93,7 +92,11 @@
 						  <strong> Public:</strong>
 						   <a target="_blank" href="{{a.public_cert_der_url}}">der </a>|
 						   <a target="_blank" href="{{a.public_cert_pem_url}}">pem </a>|
-						   <a target="_blank" href="{{a.public_cert_x5c_url}}">json</a><br>
+						   <a target="_blank" href="{{a.public_cert_x5c_url}}">json </a><br>
+						 
+						<strong>CRL:</strong> <a href = "{{a.crl_url}}">crl</a> (der)<br>
+						<strong>AIA:</strong> <a href="{{a.aia_url}}">der</a><br>
+						 
 						 
 						</td>
 						
@@ -125,17 +128,12 @@
 							  {% else %}
 									<em>Verifiction in progress.</em>
 							  {% endif %}
-							  
-							  
+							    
 							 </td>
-						   
-						   
+						    
 						   {% endif %}
 						  
-						
 						</tr>
-						
-						
 						
 						{% endfor %}
 						

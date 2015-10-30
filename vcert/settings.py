@@ -212,14 +212,13 @@ AWS_BUCKET =''
 
 #Org  and CA Settings -----------------------------------------------------
 ORGANIZATION_NAME = "Sample-CA"
-
+CA_COMMON_NAME = "ca.example.com"
 LOCATION_NAME = "Anywhere, USA"
 GLOBAL_TITLE = "caconsole.example.com"
 CA_VERIFIER_EMAIL = "verifier@example.com"
 CA_HOSTNAME = "localhost:8000/static"
 CA_URL = 'http://%s/' % (CA_HOSTNAME)
 
-print CA_URL
 # Send outbound emails such as #verification notification and more
 SEND_CA_EMAIL       = True
 
@@ -227,23 +226,36 @@ CA_PUBLICATION_OPTIONS = ("LOCAL", "S3") #Valid options are "LOCAL" and "S3".
 
 ACCOUNT_REQUEST_TEXT = "Contact example@example.com for a code."
 
-
-
 # Not reccomended to adjust this part
 
 CA_BASE_DIR = "/opt/ca/"
-CA_CONF_DIR       = os.path.join( CA_BASE_DIR, 'conf/' )
-CA_PRIVATE_DIR    = os.path.join( CA_BASE_DIR, 'private/' )
-CA_PUBLIC_DIR     = os.path.join( CA_BASE_DIR, 'public/' )
-CA_SIGNED_DIR     = os.path.join( CA_BASE_DIR, 'signed-keys/' )
-CA_COMPLETED_DIR  = os.path.join( CA_BASE_DIR, 'completed/' )
-CA_INPROCESS_DIR  = os.path.join( CA_BASE_DIR, 'inprocess/' )
+CA_CONF_DIR              = os.path.join( CA_BASE_DIR, 'conf/' )
+CA_PRIVATE_DIR           = os.path.join( CA_BASE_DIR, 'private/' )
+CA_PUBLIC_DIR            = os.path.join( CA_BASE_DIR, 'public/' )
+CA_SIGNED_DIR            = os.path.join( CA_BASE_DIR, 'signed-keys/' )
+CA_COMPLETED_DIR         = os.path.join( CA_BASE_DIR, 'completed/' )
+CA_INPROCESS_DIR         = os.path.join( CA_BASE_DIR, 'inprocess/' )
 CA_INPROCESS_ANCHOR_DIR  = os.path.join( CA_INPROCESS_DIR, 'anchors/' )
-CA_CRL_DIR        = os.path.join( CA_BASE_DIR, 'crl/' )
+CA_CRL_DIR               = os.path.join( CA_BASE_DIR, 'crl/' )
+
+
+
+
+PUBLIC_CERTS_URL_PREFIX     = '%s%s/' % (CA_URL, "public")
+CRL_URL_PREFIX              = '%s%s/' % (CA_URL, "crl")
+CA_ROOT_CRL_URL             = '%s%s.crl' % (CRL_URL_PREFIX, CA_COMMON_NAME)
+CA_ROOT_AIA_URL             = '%s%s.der' % (CRL_URL_PREFIX, CA_COMMON_NAME)
+AIA_URL_PREFIX              = '%s%s/' % (CA_URL, "aia")
+PRIVATE_URL_PREFIX          = '%s%s/' % (CA_URL, "private")
+RCSP_URL_PREFIX             = '%s%s/' % (CA_URL, "rcsp")
+RCSPSHA1_URL_PREFIX         = '%s%s/' % (CA_URL, "rcsp-sha1")
+X5C_URL_PREFIX              = '%s%s/' % (CA_URL, "x5c")
+
+
 
 # The folowwing items can be adjusted.
 CA_COMMON_NAME ="ca.example.com"
-CA_PUBLIC_CERT = os.path.join(CA_PUBLIC_DIR, CA_COMMON_NAME, ".pem")
+CA_PUBLIC_CERT = os.path.join(CA_PUBLIC_DIR, CA_COMMON_NAME, ".der")
 CA_MAIN_CONF      = os.path.join( CA_CONF_DIR , "root.cnf")
 CA_MAIN_SERIAL    = os.path.join( CA_CONF_DIR , "serial")
 

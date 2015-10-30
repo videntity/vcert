@@ -190,7 +190,7 @@ def create_trust_anchor_certificate(common_name     = "example.com",
                                     country         = "US",
                                     rsakey          = 2048,
                                     user            = "alan",
-                                    aia_url         = settings.AIA_FOR_TRUST_ANCHORS,
+                                    aia_url         = settings.CA_ROOT_AIA_URL,
                                     include_aia     = True,
                                     parent          = None ):
     
@@ -219,7 +219,7 @@ def create_trust_anchor_certificate(common_name     = "example.com",
     
     
     if not parent:
-        #print "Root Trust Anchor"
+        print "Root Trust Anchor"
         conf_stub_file_name             = tname  + "trust-anchor-stub.cnf"
         #conf_intermediate_stub_file_name  = tname  + "intermediate-anchor-stub.cnf"
         completed_user_dir              = os.path.join(settings.CA_COMPLETED_DIR, user )
@@ -227,6 +227,14 @@ def create_trust_anchor_certificate(common_name     = "example.com",
         completed_this_anchor_dir       = os.path.join(completed_user_anchor_dir, dns)
         completed_user_dom_bound_dir    = os.path.join(completed_this_anchor_dir, "endoints")
         completed_user_intermediate_dir = os.path.join(completed_this_anchor_dir, "intermediates")
+        crl_url                         = settings.CA_ROOT_CRL_URL
+        aia_url                         = settings.CA_ROOT_AIA_URL
+        print crl_url, aia_url
+        
+        # os.path.join(settings.CA_COMPLETED_DIR, user )
+        
+        
+        
         # Copy a stub configs to our working directory----------------------------------
         copyfile(os.path.join(settings.CA_CONF_DIR, "trust-anchor-stub.cnf"),
                                conf_stub_file_name)
@@ -245,8 +253,10 @@ def create_trust_anchor_certificate(common_name     = "example.com",
         # Copy a stub config file to our directory----------------------------------
         copyfile(os.path.join(settings.CA_CONF_DIR, "intermediate-anchor-stub.cnf"),
                  conf_stub_file_name)
-        this_conf = os.path.join(this_dir, conf_stub_file_name) 
- 
+        this_conf = os.path.join(this_dir, conf_stub_file_name)
+        crl_url                         = settings.CRL_URL_PREFIX + "/" + user + "/"+ parrent.common_name + ".crl"
+        aia_url                         = settings.AIA_URL_PREFIX + "/" + user + "/"+ parrent.common_name + ".der"
+        
     #print "COMPLETED PATH IS: ",  completed_this_anchor_dir
 
     keysize = "rsa:" + str(rsakey)
@@ -300,12 +310,14 @@ def create_trust_anchor_certificate(common_name     = "example.com",
     error, output = sedswap("|COMMON_NAME|", common_name, this_conf)
     error, output = sedswap("|ORGANIZATION|", organization ,this_conf)
     error, output = sedswap("|EMAIL_ADDRESS|", email, this_conf)
-    
+    error, output = sedswap("|CRL_URL|", crl_url, this_conf)
+    error, output = sedswap("|AIA_URL|", aia_url, this_conf)
 
+    
+    
 
     if not parent:
         error, output = sedswap("|ANCHORDNS|", settings.CA_COMMON_NAME,  this_conf)
-
     else:
         error, output = sedswap("|CERTIFICATE|", parent.public_key_path, this_conf)
         error, output = sedswap("|COMPLETED_ANCHOR_DIR|", parent.completed_dir_path, this_conf)
@@ -315,13 +327,14 @@ def create_trust_anchor_certificate(common_name     = "example.com",
     if include_aia:
  
         if not parent: 
-            aia = settings.CA_COMMON_NAME
+            #Points to a DER.
+            aia_url = settings.CA_URL + "aia/" + settings.CA_COMMON_NAME + ".der"
         else:
-            aia = parent.aia_url
-        error, output = sedswap("|AIA_FOR_TRUST_ANCHORS|", aia,  this_conf)
+            aia_url = parent.aia_url
+        error, output = sedswap("|AIA_URL|", aia_url,  this_conf)
         
     else:
-        error, output = sedswap("|AIA_FOR_TRUST_ANCHORS|", settings.INVALID_AIA_URL,  this_conf)
+        error, output = sedswap("|AIA_URL|", settings.INVALID_AIA_URL,  this_conf)
   
     
     # Build the certificate from the signing request.
@@ -454,8 +467,8 @@ def create_trust_anchor_certificate(common_name     = "example.com",
                    "private_key_path": private_key_path_pem,
                    "public_key_path": public_key_path_pem,
                    "completed_dir_path": completed_this_anchor_dir,
-                   "aia_url":  aia,
-                   "crl_url": "http://fpp.com/foo.crl"})
+                   "aia_url":  aia_url,
+                   "crl_url": crl_url})
     
     # Get back to the directory we started.
     os.chdir(settings.BASE_DIR) 
