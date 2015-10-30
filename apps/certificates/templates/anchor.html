@@ -2,21 +2,43 @@
 {% block content %}
 
 {% load i18n %}
+ {% load mptt_tags %}
+
+
 
 
 <div class="container">
-	  <div class="row">
-	   <div class="col-md-2 col-md-offset-5">
-			<h1>{{anchor.common_name}}</h1>
+	  
+
+
+      <div class="row">
 			
-	   </div>
-	   </div>
+			
+
+			<ul class="breadcrumb">
+		
+				<li><a href="/">{{ca_common_name}}</a></li>
+					
+					{% for parent in anchor.get_ancestors %}
+					 <li> <a href="/certificates/view-anchor/{{ parent.serial_number }}">{{ parent.common_name }}</a></li>
+					{% endfor %}
+				   
+		
+				<li class="active">{{anchor.common_name}}</li>
+		
+			 </ul>
+      </div>
+
+
+
+
 	  
       <div class="row">
               <h2>Anchors</h2>
       </div>
 </div>
 
+			
 
 <div class="container">
       <div class="row">

@@ -254,8 +254,8 @@ def create_trust_anchor_certificate(common_name     = "example.com",
         copyfile(os.path.join(settings.CA_CONF_DIR, "intermediate-anchor-stub.cnf"),
                  conf_stub_file_name)
         this_conf = os.path.join(this_dir, conf_stub_file_name)
-        crl_url                         = settings.CRL_URL_PREFIX + "/" + user + "/"+ parrent.common_name + ".crl"
-        aia_url                         = settings.AIA_URL_PREFIX + "/" + user + "/"+ parrent.common_name + ".der"
+        crl_url                         = settings.CRL_URL_PREFIX + "/" + user + "/"+ parent.common_name + ".crl"
+        aia_url                         = settings.AIA_URL_PREFIX + "/" + user + "/"+ parent.common_name + ".der"
         
     #print "COMPLETED PATH IS: ",  completed_this_anchor_dir
 

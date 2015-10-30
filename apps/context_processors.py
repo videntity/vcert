@@ -12,8 +12,8 @@ def global_title(request):
 def ca_common_name(request):
     return {'ca_common_name': settings.CA_COMMON_NAME}
 
-def ca_url2(request):
-    return {'ca_url2': settings.CA_URL}
+def ca_url(request):
+    return {'ca_url': settings.CA_URL}
 
 
 

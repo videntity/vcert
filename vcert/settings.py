@@ -284,6 +284,7 @@ RCSPSHA1_BUCKET     = "rcspsha1.example.com"
 TEMPLATE_CONTEXT_PROCESSORS = global_settings.TEMPLATE_CONTEXT_PROCESSORS + \
                 ('apps.context_processors.global_title',
                  'apps.context_processors.ca_common_name',
+                 'apps.context_processors.ca_url',
                  )
 
 
