@@ -18,9 +18,9 @@ emailAddress            = sales@videntity.com
 [ v3_ca ]
 subjectKeyIdentifier    = hash
 authorityKeyIdentifier  = keyid:always,issuer:always
-basicConstraints        = critical, CA:true
-keyUsage                = critical, keyCertSign, cRLSign
-crlDistributionPoints   = URI:http://ca.directca.org/crl/ca.directca.org.crl
+basicConstraints        = CA:true
+keyUsage                = keyCertSign, cRLSign
+crlDistributionPoints   = URI:http://localhost:800/static/crl/ca.directca.org.crl
 
 
 [ ca ]
@@ -38,8 +38,6 @@ name_opt                = ca_default
 cert_opt                = ca_default
 default_crl_days        = 01
 default_days            = 3650
-
-
 default_md              = sha256
 preserve                = no
 policy                  = policy_match
@@ -60,7 +58,7 @@ subjectKeyIdentifier    = hash
 authorityKeyIdentifier  = keyid,issuer:always
 keyUsage                = keyCertSign, cRLSign
 subjectAltName          = DNS: |DNS|
-crlDistributionPoints   = URI:http://ca.directca.org/crl/ca.directca.org.crl
+crlDistributionPoints   = URI:http://localhost:8000/static/crl/ca.directca.org.crl
 serial                  = /opt/ca/conf/serial
 
 

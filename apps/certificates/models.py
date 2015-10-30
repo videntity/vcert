@@ -82,6 +82,13 @@ class TrustAnchorCertificate(MPTTModel):
     crl_url             = models.CharField(max_length=1024,
                             help_text="The CRL URL ",default="", blank=True)
     
+    
+    chain_url             = models.CharField(max_length=1024,
+                            help_text="The X5C URL ",default="", blank=True)
+    
+    x5c_url             = models.CharField(max_length=1024,
+                            help_text="The X5C URL ",default="", blank=True)
+    
     private_key_path    = models.CharField(max_length=1024, default="",
                                         blank=True)
     public_key_path     = models.CharField(max_length=1024, default="",
@@ -218,6 +225,8 @@ class TrustAnchorCertificate(MPTTModel):
             self.completed_dir_path = result['completed_dir_path']
             self.aia_url            = result['aia_url']
             self.crl_url            = result['crl_url']
+            self.chain_url          = result['chain_url']
+            self.x5c_url            = result['x5c_url']
             
             #send the verifier an email notification
             if settings.SEND_CA_EMAIL:
@@ -341,14 +350,20 @@ class TrustAnchorCertificate(MPTTModel):
             # JOSE X5C-------------------------------------------------------------
             #get all the files
             
-            if self.parent:
-                certfilelist = [settings.CA_PUBLIC_CERT, self.public_key_path]
+            if not self.parent:
+    
+                print "Top Anchor"
+                certfilelist = [settings.LOCAL_ROOT_AIA_PATH, self.public_key_path,]
             else:
-                print "Ancestors", self.get_ancestors()
-                certfilelist = [settings.CA_PUBLIC_CERT, self.public_key_path]
+                print "Intermediate anchor"#, self.get_ancestors()
+                certfilelist = [settings.LOCAL_ROOT_AIA_PATH,]
+                for a in self.get_ancestors():
+                    certfilelist.append(a.public_key_path)
+                certfilelist.append(self.public_key_path)
                 
+            print "CERT LIST", certfilelist
             
-            fn = "%s-chain.pem" % (self.dns)
+            fn = "%s-chain.pem" % (self.common_name)
             chained_cert_path = os.path.join(self.completed_dir_path, fn )
             print "CHAINED", chained_cert_path, certfilelist
          
@@ -358,45 +373,63 @@ class TrustAnchorCertificate(MPTTModel):
             x5c_json = write_x5c_message(self.email, certlist)
         
             # set the filename ------------------------------------------------
-            fn = "%s-x5c.json" % (self.serial_number)
+            fn = "%s-x5c.json" % (self.common_name)
             
             # Write it to file ------------------------------------------------
-            fp = os.path.join(self.completed_dir_path, fn)
-            
+            fp = os.path.join(self.completed_dir_path, fn)            
             f = open(fp, "w")
             f.write(str(x5c_json))
             f.close()
             
-            #Upload the x5c file to S3
-            s=SimpleS3()
-            if "S3" in settings.CA_PUBLICATION_OPTIONS:
-                key = "x5c/" + fn
-                self.public_cert_x5c_url = s.store_in_s3(key, fp,
-                                        bucket=settings.X5C_BUCKET,
-                                        public=True)
-                self.public_cert_x5c_url = s.build_pretty_url(
-                                                     self.public_cert_x5c_url,
-                                                    settings.X5C_BUCKET)
-             
+            # #Upload the x5c file to S3
+            # s=SimpleS3()
+            # if "S3" in settings.CA_PUBLICATION_OPTIONS:
+            #     key = "x5c/" + fn
+            #     self.public_cert_x5c_url = s.store_in_s3(key, fp,
+            #                             bucket=settings.X5C_BUCKET,
+            #                             public=True)
+            #     self.public_cert_x5c_url = s.build_pretty_url(
+            #                                          self.public_cert_x5c_url,
+            #                                         settings.X5C_BUCKET)
+            #  
             if "LOCAL" in  settings.CA_PUBLICATION_OPTIONS:   
-                dest = os.path.join(settings.LOCAL_PUBLIC_PATH, self.owner.username, self.dns)
+                
+                #Copy the X5c-------------------------------
+                dest = os.path.join(settings.LOCAL_X5C_PATH)
                 if not os.path.exists(dest):
                     os.makedirs(dest)
 
                 dest_file = os.path.join(dest, fn)
+                print "DESTFILE", dest_file
+                
                 
                 os.umask(0000)
                 copyfile(fp, dest_file)
-                os.chdir(settings.BASE_DIR)
-                self.public_cert_x5c_url = "%s%s/%s/%s" % (settings.PUBLIC_CERTS_URL_PREFIX, self.owner.username, self.dns, fn)
-                 
+                os.chdir(self.completed_dir_path)
+                self.public_cert_x5c_url = "%s/%s" % (settings.X5C_URL_PREFIX,  fn)
+                
+                
+                # #Copy the chained pem -------------------------------
+                # dest = os.path.join(settings.LOCAL_CHAIN_PATH)
+                # if not os.path.exists(dest):
+                #     os.makedirs(dest)
+                # 
+                # dest_file = os.path.join(dest, fn)
+                # print "DESTFILE", dest_file
+                
+                
+                os.umask(0000)
+                copyfile(fp, dest_file)
+                os.chdir(self.completed_dir_path)
+                self.public_cert_x5c_url = "%s/%s" % (settings.CHAIN_URL_PREFIX,  fn)
+                
 
               
             #Upload the PEM and DER public certificates  -----------------------
             
             #PEM ------------------------
             fn = "%s.pem" % (self.dns)
-            key = "%s/%s/%s" % ( self.owner.username ,self.dns, fn )
+            key = "%s/%s" % (self.dns, fn )
             fp = os.path.join(self.completed_dir_path, fn)
             
             if "S3" in settings.CA_PUBLICATION_OPTIONS:
@@ -451,7 +484,7 @@ class TrustAnchorCertificate(MPTTModel):
                 os.umask(0000)
                 copyfile(fp, dest_file)
                 os.chdir(settings.BASE_DIR)
-                self.public_cert_der_url = "%s%s/%s/%s" % (settings.AIA_URL_PREFIX, self.owner.username, self.dns, fn)
+                self.public_cert_der_url = "%s%s/%s" % (settings.AIA_URL_PREFIX, self.dns, fn)
             
             
             #Send the zip file and expire in one week
@@ -1326,15 +1359,12 @@ class DomainBoundCertificate(models.Model):
     #     
     #     super(DomainBoundCertificate, self).save(**kwargs)
 
-class RevokedDomainBoundCertificate(DomainBoundCertificate):
-    pass
-
-
 
 
 class CertificateRevocationList(models.Model):
     
     url                 = models.CharField(max_length=512, default="", blank=True)
+    local_path                 = models.CharField(max_length=512, default="", blank=True)
     creation_datetime   = models.DateTimeField(auto_now_add=True)
     creation_date       = models.DateField(auto_now_add=True)
     
@@ -1350,13 +1380,14 @@ class CertificateRevocationList(models.Model):
         verbose_name_plural = "Certificate Revocation List for Root CA %s" % settings.CA_COMMON_NAME
         
     def save(self, **kwargs):
-        self.url = build_crl()
+        self.url, self.local_path = build_crl()
     
         super(CertificateRevocationList, self).save(**kwargs)
         
 class AnchorCertificateRevocationList(models.Model):
     trust_anchor        = models.ForeignKey(TrustAnchorCertificate)
     url                 = models.CharField(max_length=512, default="", blank=True)
+    local_path          = models.CharField(max_length=512, default="", blank=True)
     creation_datetime   = models.DateTimeField(auto_now_add=True)
     creation_date       = models.DateField(auto_now_add=True)
     
@@ -1372,7 +1403,7 @@ class AnchorCertificateRevocationList(models.Model):
         
     def save(self, **kwargs):
         
-        self.url = build_anchor_crl(self.trust_anchor)
+        self.url, self.local_path = build_anchor_crl(self.trust_anchor)
     
         super(AnchorCertificateRevocationList, self).save(**kwargs)
 
