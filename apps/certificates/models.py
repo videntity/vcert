@@ -65,6 +65,7 @@ class TrustAnchorCertificate(MPTTModel):
     email               = models.CharField(max_length=512, default="",             
                             help_text= """We recommend using a top-level domain here (e.g. example.com).
                                 This field should match the DNS field exactly.""")
+    details             = models.TextField(max_length=4096, blank=True, default="")
     rsa_keysize         = models.IntegerField(default=2048,
                                             choices= RSA_KEYSIZE_CHOICES)
     country             = models.CharField(max_length=2, default = "US")
@@ -76,6 +77,7 @@ class TrustAnchorCertificate(MPTTModel):
                             help_text="No slashes. Letters, numbers, and dashes are okay. ")
     
     include_aia         = models.BooleanField(default=True, blank=True, verbose_name= "Include AIA")
+    include_crl         = models.BooleanField(default=True, blank=True, verbose_name= "Include CRL")
     aia_url             = models.CharField(max_length=1024,
                             help_text="The AIA URL ",default="", blank=True)
     
@@ -211,6 +213,7 @@ class TrustAnchorCertificate(MPTTModel):
                                         rsakey          = self.rsa_keysize,
                                         user            = self.owner.username,
                                         include_aia     = self.include_aia,
+                                        include_crl     = self.include_crl,
                                         parent          = self.parent)
 
             
@@ -227,6 +230,7 @@ class TrustAnchorCertificate(MPTTModel):
             self.crl_url            = result['crl_url']
             self.chain_url          = result['chain_url']
             self.x5c_url            = result['x5c_url']
+            self.details            = result['details']
             
             #send the verifier an email notification
             if settings.SEND_CA_EMAIL:
@@ -306,7 +310,7 @@ class TrustAnchorCertificate(MPTTModel):
             #                                         settings.RCSP_BUCKET)
             #Upload the RCSP locally
             if "LOCAL" in  settings.CA_PUBLICATION_OPTIONS:   
-                dest = os.path.join(settings.LOCAL_RCSP_PATH, self.owner.username, self.dns)
+                dest = os.path.join(settings.LOCAL_RCSP_PATH)
                 if not os.path.exists(dest):
                     os.makedirs(dest)
                 
@@ -315,7 +319,7 @@ class TrustAnchorCertificate(MPTTModel):
                 os.umask(0000)
                 copyfile(fp, dest_file)
                 os.chdir(settings.BASE_DIR)
-                self.public_cert_status_url = "%s%s/%s/%s" % (settings.RCSP_URL_PREFIX, self.owner.username, self.dns, fn)
+                self.public_cert_status_url = "%s%s" % (settings.RCSP_URL_PREFIX, fn)
             
             #Calculate the SHA1 fingerprint & write it to a file
             digestsha1 = json.dumps(sha.sha1_from_filepath(fp), indent =4)
@@ -335,7 +339,7 @@ class TrustAnchorCertificate(MPTTModel):
                                             settings.RCSPSHA1_BUCKET)
             
             if "LOCAL" in  settings.CA_PUBLICATION_OPTIONS:   
-                dest = os.path.join(settings.LOCAL_RCSPSHA1_PATH, self.owner.username, self.dns)
+                dest = os.path.join(settings.LOCAL_RCSPSHA1_PATH)
                 if not os.path.exists(dest):
                     os.makedirs(dest)
                 
@@ -344,18 +348,17 @@ class TrustAnchorCertificate(MPTTModel):
                 os.umask(0000)
                 copyfile(fp, dest_file)
                 os.chdir(settings.BASE_DIR)
-                self.public_cert_status_sha1_url = "%s%s/%s/%s" % (settings.RCSPSHA1_URL_PREFIX, self.owner.username, self.dns, fn)
+                self.public_cert_status_sha1_url = "%s%s" % (settings.RCSPSHA1_URL_PREFIX, fn)
                  
             
             # JOSE X5C-------------------------------------------------------------
             #get all the files
             
             if not self.parent:
-    
-                print "Top Anchor"
+                #print "Top Anchor"
                 certfilelist = [settings.LOCAL_ROOT_AIA_PATH, self.public_key_path,]
             else:
-                print "Intermediate anchor"#, self.get_ancestors()
+                #print "Intermediate anchor"#, self.get_ancestors()
                 certfilelist = [settings.LOCAL_ROOT_AIA_PATH,]
                 for a in self.get_ancestors():
                     certfilelist.append(a.public_key_path)
@@ -365,7 +368,7 @@ class TrustAnchorCertificate(MPTTModel):
             
             fn = "%s-chain.pem" % (self.common_name)
             chained_cert_path = os.path.join(self.completed_dir_path, fn )
-            print "CHAINED", chained_cert_path, certfilelist
+
          
             certlist = chain_keys_in_list(chained_cert_path, certfilelist)
             #write the json
@@ -464,7 +467,7 @@ class TrustAnchorCertificate(MPTTModel):
                                                        "key": key})
             if "LOCAL" in settings.CA_PUBLICATION_OPTIONS:
 
-                dest = os.path.join(settings.LOCAL_AIA_PATH, self.owner.username, self.dns)
+                dest = os.path.join(settings.LOCAL_AIA_PATH)
                 if not os.path.exists(dest):
                     os.makedirs(dest)
                 
@@ -474,7 +477,7 @@ class TrustAnchorCertificate(MPTTModel):
                 os.umask(0000)
                 copyfile(fp, dest_file)
                 os.chdir(settings.BASE_DIR)
-                self.public_cert_pem_url = "%s%s/%s/%s" % (settings.AIA_URL_PREFIX, self.owner.username, self.dns, fn)
+                self.public_cert_pem_url = "%s%s" % (settings.AIA_URL_PREFIX, fn)
             
             
             #DER -------------------------
@@ -493,8 +496,7 @@ class TrustAnchorCertificate(MPTTModel):
             
             if "LOCAL" in settings.CA_PUBLICATION_OPTIONS:
                 #
-                dest = os.path.join(settings.LOCAL_AIA_PATH, self.owner.username,
-                                    self.dns)
+                dest = os.path.join(settings.LOCAL_AIA_PATH)
                 if not os.path.exists(dest):
                     os.makedirs(dest)
                 
@@ -504,7 +506,7 @@ class TrustAnchorCertificate(MPTTModel):
                 os.umask(0000)
                 copyfile(fp, dest_file)
                 os.chdir(settings.BASE_DIR)
-                self.public_cert_der_url = "%s%s/%s" % (settings.AIA_URL_PREFIX, self.dns, fn)
+                self.public_cert_der_url = "%s%s" % (settings.AIA_URL_PREFIX, fn)
             
             
             #Send the zip file and expire in one week
@@ -594,7 +596,7 @@ class TrustAnchorCertificate(MPTTModel):
                                     public=True)
                 if "LOCAL" in settings.CA_PUBLICATION_OPTIONS:
                 
-                    dest = os.path.join(settings.LOCAL_RCSP_PATH, self.owner.username, self.dns)
+                    dest = os.path.join(settings.LOCAL_RCSP_PATH)
                     if not os.path.exists(dest):
                         os.makedirs(dest)
                     
@@ -603,7 +605,7 @@ class TrustAnchorCertificate(MPTTModel):
                     os.umask(0000)
                     copyfile(fp, dest_file)
                     os.chdir(settings.BASE_DIR)
-                    self.public_cert_status_sha1_url = "%s%s/%s/%s" % (settings.RCSP_URL_PREFIX, self.owner.username, self.dns, fn)
+                    self.public_cert_status_sha1_url = "%s%s" % (settings.RCSP_URL_PREFIX, fn)
                     
                     
                     
@@ -621,7 +623,7 @@ class TrustAnchorCertificate(MPTTModel):
                 
                 if "LOCAL" in settings.CA_PUBLICATION_OPTIONS:
                 
-                    dest = os.path.join(settings.LOCAL_RCSPSHA1_PATH, self.owner.username, self.dns)
+                    dest = os.path.join(settings.LOCAL_RCSPSHA1_PATH)
                     if not os.path.exists(dest):
                         os.makedirs(dest)
                     
@@ -630,7 +632,7 @@ class TrustAnchorCertificate(MPTTModel):
                     os.umask(0000)
                     copyfile(fp, dest_file)
                     os.chdir(settings.BASE_DIR)
-                    self.public_cert_status_sha1_url = "%s%s/%s/%s" % (settings.RCSPSHA1_URL_PREFIX, self.owner.username, self.dns, fn)
+                    self.public_cert_status_sha1_url = "%s%s" % (settings.RCSPSHA1_URL_PREFIX,  fn)
                     
                     
                 
@@ -728,6 +730,7 @@ class DomainBoundCertificate(models.Model):
                                          unless you are creating a "bad"
                                          certificate for testing.
                                       """)
+    details         = models.TextField(max_length=4096, blank=True, default="")
     email           = models.CharField(max_length=512, default="", verbose_name ="Email or Domain",
                             help_text="""For email-bound certificate use an
                             email address (e.g. john@direct.example.com)
@@ -741,13 +744,21 @@ class DomainBoundCertificate(models.Model):
                                         help_text="Letters, numbers, and dashes okay. No slashes")
     organization                = models.CharField(max_length=64,
                                                    help_text="Letters, numbers, and dashes okay. No slashes")
+    expire_days                 = models.IntegerField(default=730,
+                                                  choices=EXPIRE_CHOICES )
     include_aia         = models.BooleanField(default=True, blank=True, verbose_name= "Include AIA")
     include_crl        = models.BooleanField(default=True, blank=True, verbose_name= "Include CRL")
     aia_url             = models.CharField(max_length=1024,
                             help_text="The AIA URL ", default="", blank=True)
     
     crl_url             = models.CharField(max_length=1024,
-                            help_text="The CRL URL ",default="", blank=True)    
+                            help_text="The CRL URL ",default="", blank=True)
+    
+    x5c_url             = models.CharField(max_length=1024,
+                            help_text="The X5C URL ", default="", blank=True)
+    
+    chain_url             = models.CharField(max_length=1024,
+                            help_text="The chain URL ",default="", blank=True)
     
     completed_dir_path          = models.CharField(max_length=1024, default="",
                                         blank=True)
@@ -816,8 +827,7 @@ class DomainBoundCertificate(models.Model):
     contact_land_phone          = PhoneNumberField(max_length = 15, blank = True)
     contact_fax                 = PhoneNumberField(max_length = 15, blank = True)
     expiration_date             = models.DateField(blank=True, editable=False)
-    expire_days                 = models.IntegerField(default=365,
-                                                  choices=EXPIRE_CHOICES )
+
     creation_date               = models.DateField(auto_now_add=True)
     
 
@@ -862,6 +872,7 @@ class DomainBoundCertificate(models.Model):
             
             
             result = create_endpoint_certificate(
+                        anchor              = self.trust_anchor,
                         common_name         = self.common_name,
                         email               = self.email,
                         dns                 = self.dns,
@@ -877,17 +888,23 @@ class DomainBoundCertificate(models.Model):
                         public_key_path     = self.trust_anchor.public_key_path,
                         private_key_path    = self.trust_anchor.private_key_path,
                         completed_anchor_dir= self.trust_anchor.completed_dir_path,
-                        include_aia         = self.include_aia)
+                        include_aia         = self.include_aia,
+                        include_crl         = self.include_crl)
             
             
-            sha256_digest           = result['sha256_digest']
-            self.serial_number      = result['serial_number']
-            self.sha1_fingerprint   = result['sha1_fingerprint']
-            self.notes              = result['notes']
-            self.private_zip_name   = result['anchor_zip_download_file_name']
-            self.status             = result['status']
-            self.completed_dir_path = result['completed_dir_path']
+            self.sha256_digest       = result['sha256_digest']
+            self.serial_number       = result['serial_number']
+            self.sha1_fingerprint    = result['sha1_fingerprint']
+            self.notes               = result['notes']
+            self.private_zip_name    = result['anchor_zip_download_file_name']
+            self.status              = result['status']
+            self.completed_dir_path  = result['completed_dir_path']
             self.public_key_path     = result['public_key_path']
+            self.details             = result['details']
+            self.aia_url             = result['aia_url']
+            self.crl_url             = result['crl_url']
+            self.x5c_url             = result['x5c_url']
+            self.chain_url           = result['chain_url']
             
             #send the verifier an email notification
             msg = """
@@ -895,17 +912,17 @@ class DomainBoundCertificate(models.Model):
             <head>
             </head>
             <body>
-            A new Direct Domain Bound certificate was created by %s and requires your review.
+            A new Direct endpoint certificate was created by %s and requires your review.
             Here is a link:
             <ul>
-            <li><a href="http://caconsole.nist.gov/admin/certificates/domainboundcertificate/%s">%s</a></li>
+            <li><a href="%s/admin/certificates/domainboundcertificate/%s">%s</a></li>
             </ul>
             </body>
             </html>
-            """ % (self.organization, self.id, self.domain,
+            """ % (self.organization, self.id, settings.HOSTNAME_URL, self.domain,
                    )
             if settings.SEND_CA_EMAIL :
-                subject = "[%s]A new Domain-Bound Certificate requires verification" % (settings.ORGANIZATION_NAME)
+                subject = "[%s]A New Direct Endpoint Certificate requires verification" % (settings.ORGANIZATION_NAME)
                 msg = EmailMessage(subject,  msg,
                                settings.EMAIL_HOST_USER,
                                [settings.CA_VERIFIER_EMAIL,])            
@@ -919,10 +936,8 @@ class DomainBoundCertificate(models.Model):
         if self.verified and not self.verified_message_sent and \
            self.status in  ('unverified', 'good'):
             
-            
             """ Mark the certificate as verified"""
             self.verified = True
-            
             self.status = "good"
             # RCSP ------------------------------------------------------------
             rcsp_result = write_verification_message(self.serial_number,
@@ -955,7 +970,7 @@ class DomainBoundCertificate(models.Model):
             
             
             if "LOCAL" in  settings.CA_PUBLICATION_OPTIONS:   
-                dest = os.path.join(settings.LOCAL_RCSP_PATH, self.trust_anchor.owner.username, self.dns)
+                dest = os.path.join(settings.LOCAL_RCSP_PATH)
                 if not os.path.exists(dest):
                     os.makedirs(dest)
                 
@@ -964,7 +979,7 @@ class DomainBoundCertificate(models.Model):
                 os.umask(0000)
                 copyfile(fp, dest_file)
                 os.chdir(settings.BASE_DIR)
-                self.public_cert_status_url = "%s%s/%s/%s" % (settings.RCSP_URL_PREFIX, self.trust_anchor.owner.username, self.dns, fn)
+                self.public_cert_status_url = "%s%s" % (settings.RCSP_URL_PREFIX, fn)
                 
 
             #Calculate the RCSP SHA1 fingerprint & write it to a file
@@ -981,7 +996,7 @@ class DomainBoundCertificate(models.Model):
                         bucket=settings.RCSPSHA1_BUCKET,public=True)
             
             if "LOCAL" in  settings.CA_PUBLICATION_OPTIONS:   
-                dest = os.path.join(settings.LOCAL_RCSPSHA1_PATH, self.trust_anchor.owner.username, self.dns)
+                dest = os.path.join(settings.LOCAL_RCSPSHA1_PATH)
                 if not os.path.exists(dest):
                     os.makedirs(dest)
                 
@@ -994,9 +1009,13 @@ class DomainBoundCertificate(models.Model):
             
             #JOSE x5c ---------------------------------------------------------    
             #get all the files
-            certfilelist = [ settings.CA_PUBLIC_CERT,
-                                self.trust_anchor.public_key_path,
-                                self.public_key_path ]
+            certfilelist = [ settings.LOCAL_ROOT_AIA_PATH,]
+            for a in self.trust_anchor.get_ancestors():
+                certfilelist.append(a.public_key_path)
+            certfilelist.append(self.trust_anchor.public_key_path)
+            certfilelist.append(self.public_key_path)
+            
+            
             
             fn = "%s-chain.pem" % (self.dns)
             chained_cert_path = os.path.join(self.completed_dir_path, fn )
@@ -1035,21 +1054,15 @@ class DomainBoundCertificate(models.Model):
                 os.umask(0000)
                 copyfile(fp, dest_file)
                 os.chdir(settings.BASE_DIR)
-                self.public_cert_x5c_url = "%s%s/%s/%s" % (settings.PUBLIC_CERTS_URL_PREFIX,
-                                                           self.trust_anchor.owner.username, self.dns, fn)
-                
-            
-            
-            
-            #Upload the PEM and DER public certificates  
-            
-            # PEM ----------------------------------------------------
+                self.public_cert_x5c_url = "%s%s" % (settings.X5C_URL_PREFIX, fn)
+            # PEM ----------------------------------------------------    
             fn = "%s.pem" % (self.dns)
-            key = "%s/%s/endpoints/%s" % (self.trust_anchor.owner.username,
-                                          self.trust_anchor.dns, fn )
-            
             fp = os.path.join(self.completed_dir_path, fn)
             if "S3" in settings.CA_PUBLICATION_OPTIONS:
+                   
+                key = "%s/%s/endpoints/%s" % (self.trust_anchor.owner.username,
+                                          self.trust_anchor.dns, fn )
+                
                 self.public_cert_pem_url = s.store_in_s3(key, fp,
                                                     bucket=settings.PUBCERT_BUCKET,
                                                     public=True)
@@ -1062,24 +1075,21 @@ class DomainBoundCertificate(models.Model):
             
             if "LOCAL" in settings.CA_PUBLICATION_OPTIONS:
 
-                dest = os.path.join(settings.LOCAL_PUBLIC_PATH, self.trust_anchor.owner.username, self.dns)
+                dest = os.path.join(settings.LOCAL_PUBLIC_PATH)
                 if not os.path.exists(dest):
                     os.makedirs(dest)
                 
-
                 dest_file = os.path.join(dest, fn)
                 
                 os.umask(0000)
                 copyfile(fp, dest_file)
                 os.chdir(settings.BASE_DIR)
-                self.public_cert_pem_url = "%s%s/%s/%s" % (settings.PUBLIC_CERTS_URL_PREFIX,
-                                                           self.trust_anchor.owner.username, self.dns, fn)
+                self.public_cert_pem_url = "%s%s" % (settings.PUBLIC_URL_PREFIX, fn)
             
                 
             # DER ---------------------------------------------------
             fn = "%s.der" % (self.dns)
-            key = "%s/%s/%s" % (self.trust_anchor.owner.username, self.dns,
-                                   fn )
+            key = "%s/%s/%s" % (self.trust_anchor.owner.username, self.dns, fn )
             fp = os.path.join(self.completed_dir_path, fn)
             #print "S3 --------------------", key, fp
             if "S3" in settings.CA_PUBLICATION_OPTIONS:
@@ -1092,7 +1102,7 @@ class DomainBoundCertificate(models.Model):
             
             if "LOCAL" in settings.CA_PUBLICATION_OPTIONS:
 
-                dest = os.path.join(settings.LOCAL_PUBLIC_PATH, self.trust_anchor.owner.username, self.dns)
+                dest = os.path.join(settings.LOCAL_PUBLIC_PATH)
                 if not os.path.exists(dest):
                     os.makedirs(dest)
                 dest_file = os.path.join(dest, fn)
@@ -1100,8 +1110,7 @@ class DomainBoundCertificate(models.Model):
                 os.umask(0000)
                 copyfile(fp, dest_file)
                 os.chdir(settings.BASE_DIR)
-                self.public_cert_der_url = "%s%s/%s/%s" % (settings.PUBLIC_CERTS_URL_PREFIX,
-                                                           self.trust_anchor.owner.username, self.dns, fn)
+                self.public_cert_der_url = "%s%s" % (settings.PUBLIC_URL_PREFIX,fn)
             
             #PRIVATE CERTS -----------------------------------------------------------------------
             random_string = str(uuid.uuid4())
@@ -1122,8 +1131,7 @@ class DomainBoundCertificate(models.Model):
             
             if "LOCAL" in settings.CA_PUBLICATION_OPTIONS:
 
-                dest = os.path.join(settings.LOCAL_PRIVATE_PATH, random_string, self.trust_anchor.owner.username,
-                                    self.dns)
+                dest = os.path.join(settings.LOCAL_PRIVATE_PATH, random_string)
                 if not os.path.exists(dest):
                     os.makedirs(dest)
                 dest_file = os.path.join(dest, fn)
@@ -1131,8 +1139,7 @@ class DomainBoundCertificate(models.Model):
                 os.umask(0000)
                 copyfile(fp, dest_file)
                 os.chdir(settings.BASE_DIR)
-                self.private_p12_url = "%s%s/%s/%s/%s" % (settings.PRIVATE_URL_PREFIX, random_string,
-                                                            self.trust_anchor.owner.username, self.dns, fn)
+                self.private_p12_url = "%s%s/%s" % (settings.PRIVATE_URL_PREFIX, random_string, fn)
             
             #DER --------------------------------------------------------------
             fn = "%s.der" % (self.dns)
@@ -1150,8 +1157,7 @@ class DomainBoundCertificate(models.Model):
             
             if "LOCAL" in settings.CA_PUBLICATION_OPTIONS:
 
-                dest = os.path.join(settings.LOCAL_PRIVATE_PATH, random_string, self.trust_anchor.owner.username,
-                                    self.dns)
+                dest = os.path.join(settings.LOCAL_PRIVATE_PATH, random_string)
                 if not os.path.exists(dest):
                     os.makedirs(dest)
                 dest_file = os.path.join(dest, fn)
@@ -1159,8 +1165,7 @@ class DomainBoundCertificate(models.Model):
                 os.umask(0000)
                 copyfile(fp, dest_file)
                 os.chdir(settings.BASE_DIR)
-                self.private_der_url = "%s%s/%s/%s/%s" % (settings.PRIVATE_URL_PREFIX, random_string,
-                                                            self.trust_anchor.owner.username, self.dns, fn)
+                self.private_der_url = "%s%s/%s" % (settings.PRIVATE_URL_PREFIX, random_string, fn)
             
             
              # PEM --------------------------------------------------------------
@@ -1179,8 +1184,7 @@ class DomainBoundCertificate(models.Model):
             
             if "LOCAL" in settings.CA_PUBLICATION_OPTIONS:
 
-                dest = os.path.join(settings.LOCAL_PRIVATE_PATH, random_string, self.trust_anchor.owner.username,
-                                    self.dns)
+                dest = os.path.join(settings.LOCAL_PRIVATE_PATH, random_string)
                 if not os.path.exists(dest):
                     os.makedirs(dest)
                 dest_file = os.path.join(dest, fn)
@@ -1188,8 +1192,7 @@ class DomainBoundCertificate(models.Model):
                 os.umask(0000)
                 copyfile(fp, dest_file)
                 os.chdir(settings.BASE_DIR)
-                self.private_pem_url = "%s%s/%s/%s/%s" % (settings.PRIVATE_URL_PREFIX, random_string,
-                                                            self.trust_anchor.owner.username, self.dns, fn)
+                self.private_pem_url = "%s%s/%s" % (settings.PRIVATE_URL_PREFIX, random_string, fn)
             
             
             ##Send the zip file and expire in one week
@@ -1211,7 +1214,7 @@ class DomainBoundCertificate(models.Model):
             <body>
             Congratulations. Your domain bound certificate has been verified.
             Below are links to your public certificates and related status information.
-            Please login into <a href="http://caconsole.nist.gov">caconsole.nist.gov</a>
+            Please login into <a href="%s>%s</a>
             to retrieve your private certificates for this domain.
             <ul>
                 <li><a href="%s">PEM File -  %s  </a></li>
@@ -1221,18 +1224,20 @@ class DomainBoundCertificate(models.Model):
             </ul>
             
             <p>For security purposes you must
-            <a href="https://console.directca.org">login</a> and download the
+            <a href="%s">login</a> and download the
             private certificates within 72 hours of this email.  
             </p>
             
             </body>
             </html>
-            """ % (self.public_cert_pem_url,            self.public_cert_pem_url,
+            """ % (settings.HOSTNAME_URL,        settings.HOSTNAME_URL,
+                   self.public_cert_pem_url,            self.public_cert_pem_url,
                    self.public_cert_der_url,            self.public_cert_der_url,
                    self.public_cert_status_url,         self.public_cert_status_url,
+                   settings.HOSTNAME_URL
                    )
             if settings.SEND_CA_EMAIL:
-                subject = "[%s]Your Domain-Bound Certificate has been verified"  % (settings.ORGANIZATION_NAME)
+                subject = "[%s]Your Direct endpoint Certificate has been verified"  % (settings.ORGANIZATION_NAME)
                 msg = EmailMessage(subject,msg,
                                settings.EMAIL_HOST_USER,
                                [self.trust_anchor.owner.email, self.contact_email])            
@@ -1271,7 +1276,7 @@ class DomainBoundCertificate(models.Model):
                 url = s.store_in_s3(fn, fp, bucket=settings.RCSP_BUCKET,
                                 public=True)
             if "LOCAL" in settings.CA_PUBLICATION_OPTIONS:
-                dest = os.path.join(settings.LOCAL_X5C_PATH, self.trust_anchor.owner.username, self.dns)
+                dest = os.path.join(settings.LOCAL_X5C_PATH)
                 if not os.path.exists(dest):
                     os.makedirs(dest)
                 
@@ -1279,7 +1284,7 @@ class DomainBoundCertificate(models.Model):
                 os.umask(0000)
                 copyfile(fp, dest_file)
                 os.chdir(settings.BASE_DIR)
-                self.public_cert_status_url = "%s%s/%s/%s" % (settings.X5C_URL_PREFIX, self.trust_anchor.owner.username, self.dns, fn)
+                self.public_cert_status_url = "%s%s" % (settings.X5C_URL_PREFIX, fn)
                 
                 
                  
@@ -1297,7 +1302,7 @@ class DomainBoundCertificate(models.Model):
                                 public=True)
                 
             if "LOCAL" in settings.CA_PUBLICATION_OPTIONS:
-                dest = os.path.join(settings.LOCAL_RCSPSHA1_PATH, self.trust_anchor.owner.username, self.dns)
+                dest = os.path.join(settings.LOCAL_RCSPSHA1_PATH)
                 if not os.path.exists(dest):
                     os.makedirs(dest)
                 
@@ -1305,7 +1310,7 @@ class DomainBoundCertificate(models.Model):
                 os.umask(0000)
                 copyfile(fp, dest_file)
                 os.chdir(settings.BASE_DIR)
-                self.public_cert_status_sha1_url = "%s%s/%s/%s" % (settings.RCSPSHA1_URL_PREFIX, self.trust_anchor.owner.username, self.dns, fn)
+                self.public_cert_status_sha1_url = "%s%s" % (settings.RCSPSHA1_URL_PREFIX, fn)
             
                 
                 #Delete all the old files:

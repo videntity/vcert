@@ -32,7 +32,12 @@ urlpatterns = patterns('',
                         name="verify_anchor_certificate"),    
     
     url(r'view-anchor/(?P<serial_number>\S+)', view_anchor,
-                        name="verify_anchor_certificate"),   
+                        name="view_anchor_certificate"),
+    
+    url(r'view-anchor-details/(?P<serial_number>\S+)', view_anchor_details,
+                        name="view_anchor_details"),
+    url(r'view-endpoint-details/(?P<serial_number>\S+)', view_endpoint_details,
+                        name="view_endpoint_details"),
     #url(r'$', certificate_dashboard,
     #                   name="certificate_dashboard"),
     

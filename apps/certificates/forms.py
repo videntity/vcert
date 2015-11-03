@@ -18,7 +18,7 @@ class TrustAnchorCertificateForm(ModelForm):
     class Meta:
         model = TrustAnchorCertificate
         fields = ('dns', 'rsa_keysize', 'organization','city', 'state',
-                   'expire_days', 'include_aia', 'contact_first_name',
+                   'expire_days', 'include_aia', 'include_crl','contact_first_name',
                   'contact_last_name', 'contact_email',)
    
     required_css_class = 'required'
@@ -62,7 +62,7 @@ class DomainBoundCertificateForm(ModelForm):
     class Meta:
         model = DomainBoundCertificate
         fields = ('email', 'dns', 'rsa_keysize', 'organization','city', 'state', 
-                  'expire_days', 'include_aia', 'contact_first_name', 'contact_last_name',
+                  'expire_days', 'include_aia', 'include_crl','contact_first_name', 'contact_last_name',
                   'contact_email')
    
     required_css_class = 'required'

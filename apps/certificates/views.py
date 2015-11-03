@@ -16,6 +16,26 @@ from forms import (TrustAnchorCertificateForm, DomainBoundCertificateForm,
 from mptt.utils import drilldown_tree_for_node, previous_current_next
 from django.db.models import Q
 
+
+@login_required
+def view_endpoint_details(request, serial_number):
+    
+    e = get_object_or_404(DomainBoundCertificate, serial_number=serial_number,
+                               trust_anchor__owner = request.user)
+    
+    response = HttpResponse(e.details, content_type='text/plain')
+    return response
+
+
+@login_required
+def view_anchor_details(request, serial_number):
+    
+    a = get_object_or_404(TrustAnchorCertificate, serial_number=serial_number,
+                               owner = request.user)
+    
+    response = HttpResponse(a.details, content_type='text/plain')
+    return response  
+
 @login_required
 def create_intermediate_anchor_certificate(request, serial_number):
     
@@ -37,7 +57,7 @@ def create_intermediate_anchor_certificate(request, serial_number):
                 messages.success(request, _("Your trust anchor creation request completed successfully. A human must verify this information before you can create endpoint certificates. An email will be sent when this process is complete."))
             elif ta.status == "failed":
                 messages.error(request, _("Oops.  Something has gone wrong.  Your trust anchor certifcate creation request failed. Please contact customer support."))
-            return HttpResponseRedirect(reverse('verify_anchor_certificate', args=(a.serial_number,)))
+            return HttpResponseRedirect(reverse('home'))
             
         else:
             #The form is invalid
@@ -90,7 +110,7 @@ def view_anchor(request, serial_number):
     #get all active trust anchors decendants and associated domain-bound certs
     anchor = get_object_or_404(TrustAnchorCertificate, serial_number=serial_number,
                                owner = request.user)
-    
+
     active_children=[]
     revoked_children=[]
     revoked_anchors=[]
@@ -126,7 +146,14 @@ def view_anchor(request, serial_number):
                                                              ) | \
                        DomainBoundCertificate.objects.filter(~Q(trust_anchor__parent = None),
                                                              status="unverified"
+                                                             )| \
+                       DomainBoundCertificate.objects.filter(trust_anchor = anchor,
+                                                             status="good"
+                                                             )| \
+                       DomainBoundCertificate.objects.filter(trust_anchor = anchor,
+                                                             status="unverified"
                                                              )
+     
     
     revoked_endpoints = DomainBoundCertificate.objects.filter(~Q(trust_anchor__parent = None),
                                                              status="revoked")
@@ -139,10 +166,6 @@ def view_anchor(request, serial_number):
     #                                                     status="revoked")   
     revoked_certs = revoked_anchors + list(revoked_endpoints)
         
-  
-    print  active_anchors
-    
-    print revoked_certs
         
     context={ 'anchor': anchor,
               'active_cert_list': active_anchors,
@@ -171,7 +194,7 @@ def create_endpoint_certificate(request, serial_number):
             elif c.status == "failed":
                 messages.error(request, _("Oops.  Something has gone wrong.  Your certificate creation request failed."))
             
-            return HttpResponseRedirect(reverse('verify_anchor_certificate', args=(ta.serial_number,)))
+            return HttpResponseRedirect(reverse('home'))
         else:
             #The form is invalid
              messages.error(request,_("Please correct the errors in the form."))
@@ -334,10 +357,7 @@ def verify_anchor_certificate(request, serial_number):
             else:
                 messages.error(request, _("The Direct trust anchor certificate was NOT verified. Something has gone wrong. Contact a systems administrator."))
             
-            
-           
-            
-            return HttpResponseRedirect(reverse('verify_anchor_certificate', args=(ta.serial_number,)))
+            return HttpResponseRedirect(reverse('home'))
         else:
             #The form is invalid
              messages.error(request,_("Please correct the errors in the form."))
@@ -373,7 +393,7 @@ def verify_endpoint_certificate(request, serial_number):
             else:
                 messages.error(request, _("The Direct endpoint certificate was NOT verified. Something has gone wrong. Contact a systems administrator."))
             
-            return HttpResponseRedirect(reverse('verify_anchor_certificate', args=(e.trust_anchor.serial_number,)))
+            return HttpResponseRedirect(reverse('home'))
         else:
             #The form is invalid
              messages.error(request,_("Please correct the errors in the form."))
