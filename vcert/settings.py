@@ -230,10 +230,10 @@ ACCOUNT_REQUEST_TEXT = "Contact example@example.com for a code."
 # Not reccomended to adjust this part
 
 #CA Directory structure -------------------------------------------
-CA_BASE_DIR = "/opt/ca/"
+CA_BASE_DIR              = "/opt/ca/"
 CA_CONF_DIR              = os.path.join( CA_BASE_DIR, 'conf/' )
-CA_MAIN_CONF      = os.path.join( CA_CONF_DIR , "root.cnf")
-CA_MAIN_SERIAL    = os.path.join( CA_CONF_DIR , "serial")
+CA_MAIN_CONF             = os.path.join( CA_CONF_DIR , 'root.cnf')
+CA_MAIN_SERIAL           = os.path.join( CA_CONF_DIR , 'serial')
 CA_PRIVATE_DIR           = os.path.join( CA_BASE_DIR, 'private/' )
 CA_PUBLIC_DIR            = os.path.join( CA_BASE_DIR, 'public/' )
 CA_SIGNED_DIR            = os.path.join( CA_BASE_DIR, 'signed-keys/' )
@@ -266,22 +266,12 @@ CA_ROOT_CRL_URL             = '%s%s.crl' % (CRL_URL_PREFIX, CA_COMMON_NAME)
 CA_ROOT_AIA_URL             = '%s%s.der' % (CRL_URL_PREFIX, CA_COMMON_NAME)
 AIA_URL_PREFIX              = '%s%s/'    % (CA_URL, "aia")
 PRIVATE_URL_PREFIX          = '%s%s/'    % (CA_URL, "private")
+PUBLIC_URL_PREFIX           = '%s%s/'    % (CA_URL, "public")
 RCSP_URL_PREFIX             = '%s%s/'    % (CA_URL, "rcsp")
 RCSPSHA1_URL_PREFIX         = '%s%s/'    % (CA_URL, "rcsp-sha1")
 X5C_URL_PREFIX              = '%s%s/'    % (CA_URL, "x5c")
 CHAIN_URL_PREFIX            = '%s%s/'    % (CA_URL, "chain")
 
-
-
-
-
-
-#Generate CRLs in site static
-
-
-
-
-INVALID_AIA_URL = "http://example.com/foo.der" #For endpoints
 # The S3 bucket for the certificate revocation lists.  This "webserver" is
 # used by all trust anchors.
 

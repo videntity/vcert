@@ -64,7 +64,7 @@
 								class="success"
 							{% endif %}
 							</tr>
-						<td><a href="/certificates/view-anchor/{{a.serial_number}}">{{a.common_name}}</a></td>
+						<td><a data-toggle="tooltip" title="{{a.details}}" href="/certificates/view-anchor/{{a.serial_number}}">{{a.common_name}}</a></td>
 						
 						<td>{% if a.parent %}
 							  Intermediate
@@ -77,10 +77,9 @@
 						
 						<td>  
 						
-						<strong>SHA1 Fingerprint:</strong><br>
-										   {{ a.sha1_fingerprint|slice:":30" }} <br>
-										   {{ a.sha1_fingerprint|slice:"30:" }}<br>
-						 
+						<strong>Fingerprints:</strong>
+						<span data-toggle="tooltip" title="{{a.sha1_fingerprint}}" >SHA1 |</span> 
+						<span data-toggle="tooltip" title="{{a.sha256_digest}}" >SHA256 </span></br>				  
 						<strong>Parent:</strong> {% if a.parent %}
 												   <a href="/certificates/view-anchor/{{a.parent.serial_number}}">
 												   {{a.parent.common_name}}
@@ -107,9 +106,11 @@
 						<td>
 						   
 						  <strong> Public:</strong>
-						   <a target="_blank" href="{{a.public_cert_der_url}}">der </a>|
-						   <a target="_blank" href="{{a.public_cert_pem_url}}">pem </a>|
-						   <a target="_blank" href="{{a.x5c_url}}">json </a><br>
+						   <a  href="{{a.public_cert_der_url}}">der </a>|
+						   <a  href="{{a.public_cert_pem_url}}">pem </a>|
+						   <a  href="{{a.x5c_url}}">json </a>|
+						   <a  href="/certificates/view-anchor-details/{{a.serial_number}}">txt </a>
+						   <br>
 						 
 						<strong>CRL:</strong> <a href = "{{a.crl_url}}">crl</a> (der)<br>
 						<strong>AIA:</strong> <a href="{{a.aia_url}}">der</a><br>
@@ -199,7 +200,7 @@
 				{% endif %}
 				>
 			
-			<td>{{e.common_name}}</td>
+			<td><span data-toggle="tooltip" title="{{e.details}}" >{{e.common_name}}</span></td>
 			
 			<td>{{e.email_or_domain_bound}}</td>
 			
@@ -207,28 +208,34 @@
 			
 			{% if e.status == "good" %}
 			<td>
-			  <strong>SHA1 Fingerprint:</strong> <br>
-				{{e.sha1_fingerprint|slice:":30"}} <br>
-				{{e.sha1_fingerprint|slice:"30:"}}<br>
-			
+			  <strong>Fingerprints:</strong>
+			  <span data-toggle="tooltip" title="{{e.sha1_fingerprint}}" >SHA1 |</span> 
+			  <span data-toggle="tooltip" title="{{e.sha256_digest}}" >SHA256 </span></br>
 			 <strong>Serial Number:</strong>  {{e.serial_number}}<br>
 			 <strong>Parent:</strong>  <a href="/certificates/view-anchor/{{e.trust_anchor.serial_number}}">{{e.trust_anchor.common_name}} / {{e.trust_anchor.serial_number}}</a><br>
 			 <strong>Created:</strong>   {{e.creation_date}}<br>
-			 <strong>Expires:</strong>  {{de.expiration_date}}<br>
-			 <strong>Status:</strong>  <a target="_blank"  href="{{e.public_cert_status_url}}">
+			 <strong>Expires:</strong>  {{e.expiration_date}}<br>
+			 <strong>Status:</strong>  <a   href="{{e.public_cert_status_url}}">
 		  {{e.status}}</a> |
-		  <a target="_blank"  href="{{e.public_cert_status_sha1_url}}">sha1-digest</a>
+		  <a   href="{{e.public_cert_status_sha1_url}}">sha1-digest</a>
 		   
 			<td>
 			  
 			  
 		   <strong>Public:</strong>
-				<a  target="_blank" href="{{e.public_cert_der_url}}">der </a>|
-				<a  target="_blank" href="{{e.public_cert_pem_url}}">pem </a>|
-				<a  target="_blank" href="{{e.public_cert_x5c_url}}">json</a><br>
+				<a   href="{{e.public_cert_der_url}}">der </a>|
+				<a   href="{{e.public_cert_pem_url}}">pem </a>|
+				<a   href="{{e.public_cert_x5c_url}}">json </a>|
+				<a   href="/certificates/view-endpoint-details/{{e.serial_number}}">txt </a>
+				<br>
 			<strong>Private:</strong>
-				<a target="_blank" href="{{e.private_p12_url}}">p12 </a>| 
-				<a target="_blank" href="{{e.private_pem_url}}">pem</a>
+				<a href="{{e.private_p12_url}}">p12 </a>| 
+				<a href="{{e.private_pem_url}}">pem </a><br>
+			<strong>CRL:</strong>
+				<a href="{{e.crl_url}}">crl </a> (der)<br>
+				
+			<strong>AIA:</strong>
+				<a  href="{{e.aia_url}}">der </a> 
 			</td>
 		   
 			<td>

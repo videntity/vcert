@@ -62,6 +62,6 @@ subjectAltName          = DNS: |DNS|
 subjectKeyIdentifier    = hash
 authorityKeyIdentifier  = keyid:always #, issuer:always
 keyUsage                = digitalSignature, keyEncipherment
-crlDistributionPoints   = URI:http://ca.directca.org/crl/|ANCHORDNS|.crl
-authorityInfoAccess     = caIssuers;URI:|AIA-DER|
+crlDistributionPoints   = URI:|CRL_URL|
+authorityInfoAccess     = caIssuers;URI:|AIA_URL|
 

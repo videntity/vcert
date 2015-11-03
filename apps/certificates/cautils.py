@@ -26,7 +26,18 @@ def sedswap(swap_this, for_that, config_file_path):
    
     #print swap_this, for_that #, config_file_path
     return error, output
-    
+
+def sedswap2(swap_this, for_that, config_file_path):
+    #the has signs dont work with AIA or CRL so this is needed.
+    sed_str = """s/%s/%s/g""" % (swap_this, for_that)
+    error, output = subprocess.Popen(["sed", "-i", "-e", sed_str, config_file_path],
+                                stdout=subprocess.PIPE,
+                                stderr= subprocess.PIPE
+                                ).communicate()
+   
+    #print swap_this, for_that #, config_file_path
+    return error, output
+ 
 
 def write_verification_message(serial_number, common_name, status,
                                cert_sha1_fingerprint,
@@ -196,6 +207,7 @@ def create_trust_anchor_certificate(common_name     = "example.com",
                                     user            = "alan",
                                     aia_url         = settings.CA_ROOT_AIA_URL,
                                     include_aia     = True,
+                                    include_crl     = True,
                                     parent          = None ):
     
     #a  dict for all the things we want to return
@@ -210,8 +222,9 @@ def create_trust_anchor_certificate(common_name     = "example.com",
                 "completed_dir_path":                 "",
                 "aia_url":                            "",
                 "crl_url":                            "",
-                "chain_url":                            "",
+                "chain_url":                           "",
                 "x5c_url":                            "",
+                "details":                            "",
                 }
     
     dirname = str(uuid.uuid4())[0:5]
@@ -225,7 +238,7 @@ def create_trust_anchor_certificate(common_name     = "example.com",
     
     
     if not parent:
-        print "Root Trust Anchor"
+        #"Root Trust Anchor"
         conf_stub_file_name             = tname  + "trust-anchor-stub.cnf"
         #conf_intermediate_stub_file_name  = tname  + "intermediate-anchor-stub.cnf"
         completed_user_dir              = os.path.join(settings.CA_COMPLETED_DIR, user )
@@ -235,18 +248,12 @@ def create_trust_anchor_certificate(common_name     = "example.com",
         completed_user_intermediate_dir = os.path.join(completed_this_anchor_dir, "intermediates")
         crl_url                         = settings.CA_ROOT_CRL_URL
         aia_url                         = settings.CA_ROOT_AIA_URL
-        
-        
-        # os.path.join(settings.CA_COMPLETED_DIR, user )
-        
-        
-        
+
         # Copy a stub configs to our working directory----------------------------------
         copyfile(os.path.join(settings.CA_CONF_DIR, "trust-anchor-stub.cnf"),
                                conf_stub_file_name)
         this_conf = os.path.join(this_dir, conf_stub_file_name) 
 
-        
     else:
         #print "Intermediate Anchor"
         conf_stub_file_name             = tname  + "intermediate-stub.cnf"
@@ -322,10 +329,6 @@ def create_trust_anchor_certificate(common_name     = "example.com",
     error, output = sedswap("|ORGANIZATION|", organization ,this_conf)
     error, output = sedswap("|EMAIL_ADDRESS|", email, this_conf)
     error, output = sedswap("|CRL_URL|", crl_url, this_conf)
-    error, output = sedswap("|AIA_URL|", aia_url, this_conf)
-
-    
-    
 
     if not parent:
         error, output = sedswap("|ANCHORDNS|", settings.CA_COMMON_NAME,  this_conf)
@@ -336,7 +339,11 @@ def create_trust_anchor_certificate(common_name     = "example.com",
         error, output = sedswap("|PRIVATE_KEY|", parent.private_key_path,  this_conf)
     
     
-
+    if include_crl:
+        error, output = sedswap("|CRL_URL|", crl_url, this_conf)
+    else:
+        error, output = sedswap2("crlDistributionPoints", "#crlDistributionPoints",  this_conf)
+        
     if include_aia:
  
         if not parent: 
@@ -349,7 +356,7 @@ def create_trust_anchor_certificate(common_name     = "example.com",
         error, output = sedswap("|AIA_URL|", aia_url,  this_conf)
         
     else:
-        error, output = sedswap("|AIA_URL|", settings.INVALID_AIA_URL,  this_conf)
+        error, output = sedswap2("authorityInfoAccess", "#authorityInfoAccess",  this_conf)
   
     
     # Build the certificate from the signing request.
@@ -371,18 +378,28 @@ def create_trust_anchor_certificate(common_name     = "example.com",
                              stderr= subprocess.PIPE
                             ).communicate()
     
-
     print "CERT SIGN OUT", signoutput
     
+
+    
     #if the previous step fails, then 
-    if str(output.lower()).__contains__("failed to update database"):
+    if str(signoutput.lower()).__contains__("failed to update database") or \
+       str(signoutput.lower()).__contains__("error"):
         print "PUBLIC CERT NAME:", public_cert_name, "FAILED!!!!"
         result["status"]                            = "failed"
         result["notes"] = signoutput
         os.chdir(settings.BASE_DIR) 
         return result
+    
+    
+    output = subprocess.Popen(["openssl", "x509", "-in", public_cert_name,
+                                      "-text", "-noout"],
+                             stdout=subprocess.PIPE,
+                             stderr= subprocess.PIPE
+                            ).communicate()
+    result['details'] = output[0]
         
-    #The certifciate was created so let's start plucking info out.
+    #The certificate was created so let's start plucking info out.
     #get the serial number
     #print "get the serial from the cert"
     output,error = subprocess.Popen(["openssl", "x509", "-in",
@@ -497,7 +514,8 @@ def create_trust_anchor_certificate(common_name     = "example.com",
     
 
 
-def create_endpoint_certificate(common_name     = "foo.example.com",
+def create_endpoint_certificate(    anchor,
+                                    common_name     = "foo.example.com",
                                     email           = "foo.example.com",
                                     dns             = "foo.example.com",
                                     anchor_dns      = "example.com",
@@ -512,7 +530,8 @@ def create_endpoint_certificate(common_name     = "foo.example.com",
                                     private_key_path = "",
                                     public_key_path  = "",
                                     completed_anchor_dir = "",
-                                    include_aia = True):
+                                    include_aia = True,
+                                    include_crl =True):
     
     result = {  "sha256_digest":                      "",
                 "anchor_zip_download_file_name":      "",
@@ -522,7 +541,13 @@ def create_endpoint_certificate(common_name     = "foo.example.com",
                 "private_key_path":                   "",
                 "public_key_path":                    "",
                 "notes":                              "Certificate generation in process.",
-                "completed_dir_path":                 ""}
+                "completed_dir_path":                 "",
+                "details":                            "",
+                "aia_url":                            "",
+                "crl_url":                            "",
+                "chain_url":                          "",
+                "x5c_url":                            "",
+                }
     
     dirname = str(uuid.uuid4())[0:5]
     tname =  dns
@@ -533,19 +558,18 @@ def create_endpoint_certificate(common_name     = "foo.example.com",
     p12name = tname + ".p12"                # p12 formatted private and public keys
     public_cert_name =  tname + ".pem"      #pubic certificate as a PEM
     public_cert_name_der =  tname + ".der"  # pubic certificate as a der
-    conf_stub_file_name = tname  + "domain-bound-stub.cnf"
+    conf_stub_file_name = tname  + "endpoint-stub.cnf"
     anchor_zip_download_file_name = str(uuid.uuid4()) + "-" + tname + "-ENDPOINT.zip"
     
+    completed_user_dir             = os.path.join(anchor.completed_dir_path )
+    completed_endpoint_dir          = os.path.join(anchor.completed_dir_path, "endpoints/")
+    completed_this_endpoint         = os.path.join(completed_endpoint_dir, dns)
+    result['crl_url']               = settings.CRL_URL_PREFIX + anchor.common_name + ".crl"
+    result['aia_url']               = settings.AIA_URL_PREFIX + anchor.common_name + ".der"
+    result['x5c_url']               = settings.X5C_URL_PREFIX + common_name + ".json"
+    result['chain_url']             = settings.CHAIN_URL_PREFIX + common_name + ".pem"
     
 
-
-    completed_user_dir = os.path.join(settings.CA_COMPLETED_DIR, user )
-    completed_endpoint_dir = os.path.join(completed_anchor_dir, "endpoints/")
-    completed_this_endpoint = os.path.join(completed_endpoint_dir, dns, )
-    
-    print "Email is ", email
-   
-    
     subj = '/emailAddress=' + email + \
            '/C='            + country +  \
            '/ST='           + state + \
@@ -553,7 +577,7 @@ def create_endpoint_certificate(common_name     = "foo.example.com",
            '/CN='           + common_name + \
            '/O='            + organization 
     
-    dirpath = os.path.join(settings.CA_INPROCESS_DIR, "domain-bound", dirname)
+    dirpath = os.path.join(settings.CA_INPROCESS_DIR, "endpoints", dirname)
     os.umask(0000)
     os.mkdir(dirpath)
     os.chdir(dirpath)
@@ -578,6 +602,7 @@ def create_endpoint_certificate(common_name     = "foo.example.com",
         copyfile(os.path.join(settings.CA_CONF_DIR,"domain-bound-stub.cnf"),
                     conf_stub_file_name)
     
+    this_conf= os.path.join(conf_stub_file_name)
     
     #get the next serial number
     fp = open(settings.CA_MAIN_SERIAL, "r")
@@ -585,112 +610,30 @@ def create_endpoint_certificate(common_name     = "foo.example.com",
     fp.close()
     
     # Modify the stub file
-    seddns = "s/|DNS|/%s/g" % (dns)
-    sedanchordns = "s/|ANCHORDNS|/%s/g" % (anchor_dns)
     
-    sedcompletedanchordir = "s#|COMPLETED_ANCHOR_DIR|#%s#g" % (completed_anchor_dir)
-    seddays = "s/|DAYS|/%s/g" % (expires)
-    sedpublickey = "s#|CERTIFICATE|#%s#g" % (public_key_path)
-    sedprivatekey = "s#|PRIVATE_KEY|#%s#g" % (private_key_path)
-    sedserial = "s#|SERIAL|#%s#g" % (serial[:-1])
-    sedcountry = "s#|COUNTRY|#%s#g" % (country)
-    sedstate= "s#|STATE|#%s#g" % (state)
-    sedcity = "s#|CITY|#%s#g" % (city)
-    sedcommon_name =  "s#|COMMON_NAME|#%s#g" % (common_name)
-    sedorganization = "s#|ORGANIZATION|#%s#g" % (organization)
-    sedemail = "s#|EMAIL_ADDRESS|#%s#g" % (email)
+    error, output = sedswap("|DNS|", dns, this_conf)
+    error, output = sedswap("|ANCHORDNS|", anchor_dns, this_conf)
+    error, output = sedswap("|COMPLETED_ANCHOR_DIR|", completed_anchor_dir, this_conf)
+    error, output = sedswap("|DAYS|", expires, this_conf)
+    error, output = sedswap("|CERTIFICATE|", public_key_path, this_conf)
+    error, output = sedswap("|PRIVATE_KEY|", private_key_path , this_conf)
+    error, output = sedswap("|SERIAL|", serial[:-1], this_conf)
+    error, output = sedswap("|COUNTRY|", country, this_conf)
+    error, output = sedswap("|STATE|", state , this_conf)
+    error, output = sedswap("|CITY|", city, this_conf)
+    error, output = sedswap("|COMMON_NAME|",common_name, this_conf)
+    error, output = sedswap("|ORGANIZATION|", organization, this_conf)
+    error, output = sedswap("|EMAIL_ADDRESS|", email , this_conf)
+    
+    if include_crl:    
+        error, output = sedswap("|CRL_URL|", result['crl_url'], this_conf)
+    else:
+        error, output = sedswap2("crlDistributionPoints", "#crlDistributionPoints", this_conf)
     
     if include_aia:
-        sedaia = "s#|AIA-DER|#%s#g" % (aia_der)
+        error, output = sedswap("|AIA_URL|", aia_der , this_conf)
     else:
-        sedaia = "s#|AIA-DER|#%s#g" % (settings.INVALID_AIA_URL)
-
-    error, output = subprocess.Popen(["sed", "-i", "-e", sedcompletedanchordir,
-                                      conf_stub_file_name],
-                                        stdout=subprocess.PIPE,
-                                        stderr= subprocess.PIPE
-                                        ).communicate()
-
-
-    error, output = subprocess.Popen(["sed", "-i", "-e", seddns,
-                                      conf_stub_file_name],
-                                        stdout=subprocess.PIPE,
-                                        stderr= subprocess.PIPE
-                                        ).communicate()
-    
-    error, output = subprocess.Popen(["sed", "-i", "-e", sedanchordns,
-                                      conf_stub_file_name],
-                                        stdout=subprocess.PIPE,
-                                        stderr= subprocess.PIPE
-                                        ).communicate()
-    
-    
-    
-    error, output = subprocess.Popen(["sed", "-i", "-e",
-                                      seddays, conf_stub_file_name],
-                                        stdout=subprocess.PIPE,
-                                        stderr= subprocess.PIPE
-                                        ).communicate()
-    
-    error, output = subprocess.Popen(["sed", "-i", "-e",
-                                      sedpublickey, conf_stub_file_name],
-                                        stdout=subprocess.PIPE,
-                                        stderr= subprocess.PIPE
-                                        ).communicate()
-    
-    error, output = subprocess.Popen(["sed", "-i", "-e",
-                                      sedprivatekey, conf_stub_file_name],
-                                        stdout=subprocess.PIPE,
-                                        stderr= subprocess.PIPE
-                                        ).communicate()
-
-    error, output = subprocess.Popen(["sed", "-i", "-e", sedserial, conf_stub_file_name],
-                                stdout=subprocess.PIPE,
-                                stderr= subprocess.PIPE
-                                ).communicate()      
-
-    
-    
-    error, output = subprocess.Popen(["sed", "-i", "-e", sedcountry,
-                                      conf_stub_file_name],
-                                        stdout=subprocess.PIPE,
-                                        stderr= subprocess.PIPE
-                                        ).communicate()
-    
-    error, output = subprocess.Popen(["sed", "-i", "-e", sedstate,
-                                      conf_stub_file_name],
-                                        stdout=subprocess.PIPE,
-                                        stderr= subprocess.PIPE
-                                        ).communicate()
-
-    error, output = subprocess.Popen(["sed", "-i", "-e", sedcity,
-                                      conf_stub_file_name],
-                                        stdout=subprocess.PIPE,
-                                        stderr= subprocess.PIPE
-                                        ).communicate()
-
-    error, output = subprocess.Popen(["sed", "-i", "-e", sedcommon_name,
-                                      conf_stub_file_name],
-                                        stdout=subprocess.PIPE,
-                                        stderr= subprocess.PIPE
-                                        ).communicate()
-    error, output = subprocess.Popen(["sed", "-i", "-e", sedorganization,
-                                      conf_stub_file_name],
-                                        stdout=subprocess.PIPE,
-                                        stderr= subprocess.PIPE
-                                        ).communicate()
-    
-    error, output = subprocess.Popen(["sed", "-i", "-e", sedemail,
-                                      conf_stub_file_name],
-                                        stdout=subprocess.PIPE,
-                                        stderr= subprocess.PIPE
-                                        ).communicate()
-    error, output = subprocess.Popen(["sed", "-i", "-e", sedaia,
-                                      conf_stub_file_name],
-                                        stdout=subprocess.PIPE,
-                                        stderr= subprocess.PIPE
-                                        ).communicate()
-    
+        error, output = sedswap2("authorityInfoAccess", "#authorityInfoAccess" , this_conf)
     
     # Build the certificate from the signing request.
     
@@ -701,11 +644,20 @@ def create_endpoint_certificate(common_name     = "foo.example.com",
                              stderr= subprocess.PIPE
                             ).communicate()
   
-    print "Signing ----------------", output
+    print "Signing ----------------",  signoutput
+    
+    output = subprocess.Popen(["openssl", "x509", "-in", public_cert_name,
+                                      "-text", "-noout"],
+                             stdout=subprocess.PIPE,
+                             stderr= subprocess.PIPE
+                            ).communicate()
+    result['details'] = output[0]
+    
     
     #if the previous step fails, then 
-    if str(output.lower()).__contains__("failed to update database") or \
-       str(output).__contains__("unable to load CA private key"):
+    if str(signoutput.lower()).__contains__("failed to update database") or \
+       str(signoutput.lower()).__contains__("unable to load ca private key") or \
+       str(signoutput.lower()).__contains__("error"):
         print "PUBLIC CERT NAME:", public_cert_name, "FAILED!!!!"
 
         result["status"] = "failed"
@@ -715,14 +667,12 @@ def create_endpoint_certificate(common_name     = "foo.example.com",
         
     
     #get the serial number
-    
     output,error = subprocess.Popen(["openssl", "x509", "-in",
                                       public_cert_name, "-serial","-noout",],
                              stdout=subprocess.PIPE,
                              stderr= subprocess.PIPE
                             ).communicate()
-    
-    
+
     try:
         serialsplit = output.split("=")
         serial_number = str(serialsplit[1])[:-1]
@@ -732,9 +682,7 @@ def create_endpoint_certificate(common_name     = "foo.example.com",
         os.chdir(settings.BASE_DIR) 
         return result
     
-    
-    print "SERIAL:",  serial_number
-    
+
     #get the sha1 fingerprint
     output,error = subprocess.Popen(["openssl", "x509", "-in",
                                       public_cert_name, "-fingerprint","-noout",],
@@ -749,7 +697,6 @@ def create_endpoint_certificate(common_name     = "foo.example.com",
     
     
     # Convert the public pem into a der
-    print "Convert the public pem into a der"
     output,error = subprocess.Popen(["openssl", "x509", "-outform", "der", "-in",
                                      public_cert_name, "-out",
                                      public_cert_name_der],
@@ -757,7 +704,7 @@ def create_endpoint_certificate(common_name     = "foo.example.com",
                              stderr= subprocess.PIPE
                             ).communicate()
     
-    #print "convert the private key in pem format to PCKS8 DER formatted private key file"
+
     #convert the private key in pem format to PCKS8 DER formatted private key file
     output,error = subprocess.Popen(["openssl", "pkcs8", "-topk8", "-out",
                                      PCKS8privkeyname,  "-in", privkeyname,
@@ -767,17 +714,7 @@ def create_endpoint_certificate(common_name     = "foo.example.com",
                              stderr= subprocess.PIPE
                             ).communicate()
 
-    
     # Create a p12 file from our der public key and out DER private key
-    
-    #print "openssl " + "pkcs12 " + "-export " + "-out " + p12name + " -inkey " + \
-    #        privkeyname + " -in " +  PCKS8privkeyname + " -certfile " + public_key_path
-    # call(["openssl", "pkcs12", "-export", "-out", p12name, "-inkey",  privkeyname,
-    #      "-in",  PCKS8privkeyname, "-certfile",  caCertfile ])
-
-    
-    #print "# Create a p12 file from our der public key and out DER private key"
-
     
     output,error = subprocess.Popen(["openssl", "pkcs12", "-export", "-inkey",
                                      privkeyname, "-in", public_cert_name,
@@ -794,10 +731,7 @@ def create_endpoint_certificate(common_name     = "foo.example.com",
   
 
     #Since the anchor creation process completed, then built out the perm dirs
-    
-    
-    
-    print "--------------------------------------------------------------"
+
     if not os.path.exists(completed_endpoint_dir):
         os.makedirs(completed_endpoint_dir)
     
@@ -810,14 +744,11 @@ def create_endpoint_certificate(common_name     = "foo.example.com",
     
     crl_conf = os.path.join(completed_anchor_dir, "crl.cnf" )
     
-    print "crl_conf = ", crl_conf
+
     #if a crl.cnf does not exist, then create it.
     if not os.path.exists(crl_conf):
-        print conf_stub_file_name
         copyfile(conf_stub_file_name, crl_conf)
         
-    
-    
     
     #create the zip file containing the private and public keys)
     error, output = subprocess.Popen(["zip", anchor_zip_download_file_name,
