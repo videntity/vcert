@@ -3,6 +3,7 @@
 import os
 from django.utils.translation import ugettext_lazy as _
 from django.conf import global_settings
+from django.contrib.messages import constants as messages
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -193,6 +194,13 @@ LOGGING = {
         },
     }
 }
+
+
+MESSAGE_TAGS ={ messages.DEBUG: 'info',
+                messages.INFO: 'info',
+                messages.SUCCESS: 'success',
+                messages.WARNING: 'warning',
+                messages.ERROR: 'danger',}
 
 
 # Email Settings -----------------------------------------------------------

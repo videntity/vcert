@@ -23,7 +23,6 @@ from django.utils.translation import ugettext_lazy as _
 
 def mylogout(request):
     logout(request)
-    messages.success(request, _("Logged out successfully."))
     return HttpResponseRedirect(reverse('home'))
 
     
@@ -39,7 +38,6 @@ def simple_login(request):
 
                 if user.is_active:
                     login(request,user)
-                    messages.success(request, _("You have logged in successfully."))
                     return HttpResponseRedirect(reverse('home'))
                 else:
                    messages.error(request,

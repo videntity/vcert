@@ -73,31 +73,35 @@
 
     </style>
 
-
-
 {% endblock %}
-
 
 
 
 {% block content %}
 
-
-
-
 <div class="container">
-      <div class="row">
-              <a class="btn pull-right btn-primary btn-small" href="/certificates/create-trust-anchor"
-              data-toggle="tooltip" title="Create a top-level Trust Anchor">
-                <i class="fa fa-anchor"></i> {% trans "Create a Top-Level Trust Anchor" %}
-                    </a>
-              
+<div class="row">
+    <div class="col-lg-8">
+      {% include "include/messages.html" %}
       </div>
 </div>
 
 
 
-<div class="container">
+<div class="topbtn">
+     <div class="col-lg-4">
+      <div class="row">
+              <a class="btn pull-right btn-primary btn-large" href="/certificates/create-trust-anchor"
+              data-toggle="tooltip" title="Create a top-level Trust Anchor">
+                <i class="fa fa-anchor"></i> {% trans "Create a Top-Level Trust Anchor" %}
+                    </a>     
+      </div>
+     </div>
+</div>
+
+
+
+
       <div class="row">
               
           <ul class="treeView" >
@@ -144,14 +148,6 @@
                         
                         {% endif %}
                       
-                        
-                        
-                        
-                
-                 
-   
-
-                        
                         {% if not node.is_leaf_node %}
                             <ul class="children">
                                 {{ children }}
@@ -162,7 +158,6 @@
             </ul>
             </li>
             </ul>
-
     </div>
   </div>
 {% endblock %}

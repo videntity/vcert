@@ -5,36 +5,35 @@
  {% load mptt_tags %}
 
 
-
-
 <div class="container">
 	  
-
-
+	  
+	  <div class="row">
+         <div class="col-lg-8">
+           {% include "include/messages.html" %}
+         </div>
+       </div>
+	  
+	  
       <div class="row">
 			
-			
-
-			<ul class="breadcrumb">
-		
-				<li><a href="/">Home</a></li>
-					
-					{% for parent in anchor.get_ancestors %}
-					 <li> <a href="/certificates/view-anchor/{{ parent.serial_number }}">{{ parent.common_name }}</a></li>
-					{% endfor %}
-				   
-		
-				<li class="active">{{anchor.common_name}}</li>
-		
-			 </ul>
+			<div class="col-lg-12">
+				  <ul class="breadcrumb mybreadcrumb">
+			  
+					  <li><a href="/">Home</a></li>
+						  {% for parent in anchor.get_ancestors %}
+						     <li> <a href="/certificates/view-anchor/{{ parent.serial_number }}">{{ parent.common_name }}</a></li>
+						  {% endfor %}
+					  <li class="active">{{anchor.common_name}}</li>
+				   </ul>
+			</div>
       </div>
 
 
-
-
-	  
       <div class="row">
+		<div class="col-lg-12">	
               <h2>Anchors</h2>
+	    </div>	  
       </div>
 </div>
 
@@ -42,304 +41,275 @@
 
 <div class="container">
       <div class="row">
-			<table class="table">
-				  <thead>
-						<tr>
-							  <th>DNS/Common Name</th>
-							  <th>Category</th>
-							  <th>Details</th>
-							  <th>Downloads</th>
-							  <th>Actions</th>
-						</tr>
-				  </thead>
-			 
-				  <tbody>
-						
-						{% for a in active_cert_list %}
-						
-						<tr
-							{% if a.parent %}
-							  class="info"
-							{% else %}
-								class="success"
-							{% endif %}
-							</tr>
-						<td><a data-toggle="tooltip" title="{{a.details}}" href="/certificates/view-anchor/{{a.serial_number}}">{{a.common_name}}</a></td>
-						
-						<td>{% if a.parent %}
-							  Intermediate
-							{% else %}
-								Top Anchor
-							{% endif %}
-							
-						</td>
-						{% if a.status == "good" %}
-						
-						<td>  
-						
-						<strong>Fingerprints:</strong>
-						<span data-toggle="tooltip" title="{{a.sha1_fingerprint}}" >SHA1 |</span> 
-						<span data-toggle="tooltip" title="{{a.sha256_digest}}" >SHA256 </span></br>				  
-						<strong>Parent:</strong> {% if a.parent %}
-												   <a href="/certificates/view-anchor/{{a.parent.serial_number}}">
-												   {{a.parent.common_name}}
-												   </a>
-											{% else %}
-											Root CA:
-												<a href="http://{{ca_common_name}}">
-													{{ca_common_name}}
-												   </a>
-											{% endif %}
-						<br>
-						<strong>Serial Number:</strong>    {{ a.serial_number }} <br>
-						<strong>Created:</strong> {{a.creation_date}} <br>
-						<strong>Expires:</strong> {{a.expiration_date}}<br>
-						<strong>Status:</strong>  <a   href="{{a.public_cert_status_url}}">
-						{{a.status}}</a>
-						<a  href="{{a.public_cert_status_sha1_url}}">
-						sha1-digest</a>
-						
-						<br>
-						</td>
-						
-						
-						<td>
-						   
-						  <strong> Public:</strong>
-						   <a  href="{{a.public_cert_der_url}}">der </a>|
-						   <a  href="{{a.public_cert_pem_url}}">pem </a>|
-						   <a  href="{{a.x5c_url}}">json </a>|
-						   <a  href="/certificates/view-anchor-details/{{a.serial_number}}">txt </a>
-						   <br>
-						 
-						<strong>CRL:</strong> <a href = "{{a.crl_url}}">crl</a> (der)<br>
-						<strong>AIA:</strong> <a href="{{a.aia_url}}">der</a><br>
-						 
-						 
-						</td>
-						
-						
-						<td>
-						  <a class="btn btn-success btn-small btn-block"
-							 href="/certificates/create-endpoint/{{a.serial_number}}">
-							<i class="fa fa-anchor"></i> Create an Endpoint Certificate</a>
-						  
-						  <a class="btn btn-primary btn-small btn-block"
-							 href="/certificates/create-intermediate-anchor/{{a.serial_number}}">
-							<i class="fa fa-hand-o-down"></i> Create Intermediate Anchor Certificate</a>
-						  
-						   <a class="btn btn-danger btn-small btn-block"
-							  href="/certificates/revoke-trust-anchor/{{a.serial_number}}">
-							<i class="fa fa-warning"></i> 
-							Revoke Self & Children</a>
-						</td>
-						
-						   {% else %}
-							 <td><em>Verifiction in progress.</em></td>
-							 <td><em>Verifiction in progress.</em></td>
-							 <td>
-							   {% if user.is_staff %}
-									 <a class="btn btn-warning btn-small btn-block"
-								   href="/certificates/verify-trust-anchor/{{a.serial_number}}">
-								<i class="icon-ok-sign icon-white"></i> 
-								Self-Verify</a>
-							  {% else %}
-									<em>Verifiction in progress.</em>
-							  {% endif %}
-							    
-							 </td>
-						    
-						   {% endif %}
-						  
-						</tr>
-						
-						{% endfor %}
-						
-				  </tbody>
-	  
-			</table>
-  </div>
-    
+			<div class="col-lg-10">	
+				  <table class="table">
+						<thead>
+							  <tr>
+									<th>Common Name</th>
+									<th>Category</th>
+									<th>Details</th>
+									<th>Downloads</th>
+									<th>Actions</th>
+							  </tr>
+						</thead>
+				   
+						<tbody>
+							  
+							  {% for a in active_cert_list %}
+							  
+							  <tr
+								  {% if a.parent %}
+									class="info"
+								  {% else %}
+									  class="success"
+								  {% endif %}
+								  </tr>
+							  <td><a data-toggle="tooltip" title="{{a.details}}" href="/certificates/view-anchor/{{a.serial_number}}">{{a.common_name}}</a></td>
+							  
+							  <td>{% if a.parent %}
+									Intermediate
+								  {% else %}
+									  Top Anchor
+								  {% endif %}
+								  
+							  </td>
+							  {% if a.status == "good" %}
+							  
+							  <td>  
+							  
+							  <strong>Fingerprints:</strong>
+							  <span data-toggle="tooltip" title="{{a.sha1_fingerprint}}" >SHA1 |</span> 
+							  <span data-toggle="tooltip" title="{{a.sha256_digest}}" >SHA256 </span></br>				  
+							  <strong>Parent:</strong> {% if a.parent %}
+														 <a href="/certificates/view-anchor/{{a.parent.serial_number}}">
+														 {{a.parent.common_name}}
+														 </a>
+												  {% else %}
+												  Root CA:
+													  <a href="http://{{ca_common_name}}">
+														  {{ca_common_name}}
+														 </a>
+												  {% endif %}
+							  <br>
+							  <strong>Serial Number:</strong>    {{ a.serial_number }} <br>
+							  <strong>Created:</strong> {{a.creation_date}} <br>
+							  <strong>Expires:</strong> {{a.expiration_date}}<br>
+							  <strong>Status:</strong>  <a   href="{{a.public_cert_status_url}}">
+							  {{a.status}}</a>
+							  <a  href="{{a.public_cert_status_sha1_url}}">
+							  sha1-digest</a>
+							  
+							  <br>
+							  </td>
+							  
+							  
+							  <td>
+								 
+								<strong> Public:</strong>
+								 <a  href="{{a.public_cert_der_url}}">der </a>|
+								 <a  href="{{a.public_cert_pem_url}}">pem </a>|
+								 <a  href="{{a.x5c_url}}">json </a>|
+								 <a  href="/certificates/view-anchor-details/{{a.serial_number}}">txt </a>
+								 <br>
+							   
+							  <strong>CRL:</strong> <a href = "{{a.crl_url}}">crl</a> (der)<br>
+							  <strong>AIA:</strong> <a href="{{a.aia_url}}">der</a><br>
+							   
+							   
+							  </td>
+							  
+							  
+							  <td>
+								<a class="btn btn-success btn-small btn-block"
+								   href="/certificates/create-endpoint/{{a.serial_number}}">
+								  <i class="fa fa-hand-o-down"></i> Create an Endpoint Certificate</a>
+								
+								<a class="btn btn-primary btn-small btn-block"
+								   href="/certificates/create-intermediate-anchor/{{a.serial_number}}">
+								   <i class="fa fa-anchor"></i> Create Intermediate Anchor Certificate</a>
+								
+								 <a class="btn btn-danger btn-small btn-block"
+									href="/certificates/revoke-trust-anchor/{{a.serial_number}}">
+								  <i class="fa fa-warning"></i> 
+								  Revoke Self & Children</a>
+							  </td>
+							  
+								 {% else %}
+								   <td><em>Verification in progress.</em></td>
+								   <td><em>Verification in progress.</em></td>
+								   <td>
+									 {% if user.is_staff %}
+										   <a class="btn btn-warning btn-small btn-block"
+										 href="/certificates/verify-trust-anchor/{{a.serial_number}}">
+									  <i class="fa fa-check"></i>
+									  Self-Verify</a>
+									{% else %}
+										  <em>Verification in progress.</em>
+									{% endif %}
+								   </td>
+								 {% endif %}
+							  </tr>
+							  {% endfor %}
+						</tbody>
+				  </table>
+			</div>
+    </div> 
 </div>
   
   
   
   
-  <div class="container">
+<div class="container">
       <div class="row">
+			<div class="col-lg-12">	
            <h2>{% trans "Descendant Endpoints" %}</h2>
 	  </div>
-    
-   </div>	
+     </div>
+</div>	
 	
 	<div class="container">
       <div class="row"> 
-	    
-		<table class="table">
-			<thead>
-				  <tr>
-				  <th>Email/DNS/Common Name</th>
-				  <th>Bound</th>
-				  <th>Details</th>
-				  <th>Downloads</th>
-				  <th>Actions</th>
-				  </tr>
-			</thead>
-	  <tbody>
-  
-  
-  
-  
-  
-  
-	  {% for e in active_endpoints %}
-			<tr {% if e.is_domain_bound %}
-				class="success"
-				{% else %}
-				class="info"
-				{% endif %}
-				>
-			
-			<td><span data-toggle="tooltip" title="{{e.details}}" >{{e.common_name}}</span></td>
-			
-			<td>{{e.email_or_domain_bound}}</td>
-			
-			
-			
-			{% if e.status == "good" %}
-			<td>
-			  <strong>Fingerprints:</strong>
-			  <span data-toggle="tooltip" title="{{e.sha1_fingerprint}}" >SHA1 |</span> 
-			  <span data-toggle="tooltip" title="{{e.sha256_digest}}" >SHA256 </span></br>
-			 <strong>Serial Number:</strong>  {{e.serial_number}}<br>
-			 <strong>Parent:</strong>  <a href="/certificates/view-anchor/{{e.trust_anchor.serial_number}}">{{e.trust_anchor.common_name}} / {{e.trust_anchor.serial_number}}</a><br>
-			 <strong>Created:</strong>   {{e.creation_date}}<br>
-			 <strong>Expires:</strong>  {{e.expiration_date}}<br>
-			 <strong>Status:</strong>  <a   href="{{e.public_cert_status_url}}">
-		  {{e.status}}</a> |
-		  <a   href="{{e.public_cert_status_sha1_url}}">sha1-digest</a>
-		   
-			<td>
-			  
-			  
-		   <strong>Public:</strong>
-				<a   href="{{e.public_cert_der_url}}">der </a>|
-				<a   href="{{e.public_cert_pem_url}}">pem </a>|
-				<a   href="{{e.public_cert_x5c_url}}">json </a>|
-				<a   href="/certificates/view-endpoint-details/{{e.serial_number}}">txt </a>
-				<br>
-			<strong>Private:</strong>
-				<a href="{{e.private_p12_url}}">p12 </a>| 
-				<a href="{{e.private_pem_url}}">pem </a><br>
-			<strong>CRL:</strong>
-				<a href="{{e.crl_url}}">crl </a> (der)<br>
+	    <div class="col-lg-10">	
+			<table class="table">
+				<thead>
+					  <tr>
+					  <th>Email/DNS/Common Name</th>
+					  <th>Bound</th>
+					  <th>Details</th>
+					  <th>Downloads</th>
+					  <th>Actions</th>
+					  </tr>
+				</thead>
+		  <tbody>
+	  
+		  {% for e in active_endpoints %}
+				<tr {% if e.is_domain_bound %}
+					class="success"
+					{% else %}
+					class="info"
+					{% endif %}
+					>
 				
-			<strong>AIA:</strong>
-				<a  href="{{e.aia_url}}">der </a> 
-			</td>
-		   
-			<td>
-			 
-				<a class="btn btn-danger btn-small btn-block"
-				   href="/certificates/revoke-endpoint/{{e.serial_number}}">
-				  <i class="icon-trash icon-white"></i> 
-				  Revoke</a>
-		  
-			  </td>
-			
-			 {% else %}
-			 <td><em>Verifiction in progress.</em></td>
-			 <td><em>Verifiction in progress.</em></td>
-			 <td>
-				{% if user.is_staff %}
-					   <a class="btn btn-warning btn-small btn-block"
-				   href="/certificates/verify-endpoint/{{e.serial_number}}">
-				  <i class="icon-ok-sign icon-white"></i> 
-				  Self-Verify</a>
-				{% else %}
-					  <em>Verifiction in progress.</em>
-				{% endif %}
+				<td><span data-toggle="tooltip" title="{{e.details}}" >{{e.common_name}}</span></td>
 				
+				<td>{{e.email_or_domain_bound}}</td>
+				
+				
+				
+				{% if e.status == "good" %}
+				<td>
+				  <strong>Fingerprints:</strong>
+				  <span data-toggle="tooltip" title="{{e.sha1_fingerprint}}" >SHA1 |</span> 
+				  <span data-toggle="tooltip" title="{{e.sha256_digest}}" >SHA256 </span></br>
+				 <strong>Serial Number:</strong>  {{e.serial_number}}<br>
+				 <strong>Parent:</strong>  <a href="/certificates/view-anchor/{{e.trust_anchor.serial_number}}">{{e.trust_anchor.common_name}} / {{e.trust_anchor.serial_number}}</a><br>
+				 <strong>Created:</strong>   {{e.creation_date}}<br>
+				 <strong>Expires:</strong>  {{e.expiration_date}}<br>
+				 <strong>Status:</strong>  <a   href="{{e.public_cert_status_url}}">
+			  {{e.status}}</a> |
+			  <a   href="{{e.public_cert_status_sha1_url}}">sha1-digest</a>
+			   
+				<td>
+				  
+				  
+			   <strong>Public:</strong>
+					<a   href="{{e.public_cert_der_url}}">der </a>|
+					<a   href="{{e.public_cert_pem_url}}">pem </a>|
+					<a   href="{{e.public_cert_x5c_url}}">json </a>|
+					<a   href="/certificates/view-endpoint-details/{{e.serial_number}}">txt </a>
+					<br>
+				<strong>Private:</strong>
+					<a href="{{e.private_p12_url}}">p12 </a>| 
+					<a href="{{e.private_pem_url}}">pem </a><br>
+				<strong>CRL:</strong>
+					<a href="{{e.crl_url}}">crl </a> (der)<br>
+					
+				<strong>AIA:</strong>
+					<a  href="{{e.aia_url}}">der </a> 
 				</td>
-			 
-			 {% endif %}
-			
-			</tr>
-	  {% endfor %}
-  				  </tbody>
-			
-			</table>
-  
+			   
+				<td>
+				 
+					<a class="btn btn-danger btn-small btn-block"
+					   href="/certificates/revoke-endpoint/{{e.serial_number}}">
+					  <i class="fa fa-warning"></i>
+					  Revoke</a>
+				  </td>
+				
+				 {% else %}
+				 <td><em>Verification in progress.</em></td>
+				 <td><em>Verification in progress.</em></td>
+				 <td>
+					{% if user.is_staff %}
+						   <a class="btn btn-warning btn-small btn-block"
+					   href="/certificates/verify-endpoint/{{e.serial_number}}">
+					   <i class="fa fa-check"></i>
+					  Self-Verify</a>
+					{% else %}
+						  <em>Verification in progress.</em>
+					{% endif %}
+					</td>
+				 {% endif %}		
+				</tr>
+		  {% endfor %}
+	     </tbody>
+	  </table>
+    </div>
   </div>
 </div>
   
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-
-  
 <div class="container">
-            <div class="row">
-                    <h2>{% trans "Revoked Descendant Anchors and Endpoints" %}</h2>
-            </div>
-    </div>
-
-
-
-<div class="container">
-            <div class="row">
-			<table class="table">
-			   
-				  <thead>
-						<tr>
-						<th>Email/DNS/CN</th>
-						<th>Category</th>
-						<th>Status</th>
-						<th>SHA1 Fingerprint</th>
-						<th>Serial Number</th>
-						<th>Created</th>
-						<th>Expires</th>
-						
-						</tr>
-				  </thead>
-				   
-				  <tbody>
-					
-				  {% for c in revoked_cert_list %}
-					 
-				  <tr class="danger">
-				  <td>{{ c.email }}</td>
-				  
-				  <td>{{ c.category }}</td>
-				  
-				  <td><a target="_blank"  href="{{c.public_cert_status_url}}">{{ c.status }}</a> |
-				  <a target="_blank"  href="{{c.public_cert_status_sha1_url}}">
-				  sha1-digest</a>
-				  
-				  </td>
-				  <td>{{ c.sha1_fingerprint|slice:":30"}} <br>
-					  {{c.sha1_fingerprint|slice:"30:"}}</td>
-				  <td>{{ c.serial_number }}</td>
-				  <td>{{ c.creation_date }}</td>
-				  <td>{{ c.expiration_date }}</td>
-				  
-				  </tr>
-				  
-				  {% endfor %}
-				  
-				  </tbody>
-			
-			</table>
-	     </div>
+	  <div class="row">
+			<div class="col-lg-12">	
+			  <h2>{% trans "Revoked Descendant Anchors and Endpoints" %}</h2>
+		    </div>	
 	  </div>
+</div>
+
+
+
+<div class="container">
+      <div class="row">
+			<div class="col-lg-10">
+				  <table class="table">
+						<thead>
+							  <tr>
+									<th>Email/DNS</th>
+									<th>Category</th>
+									<th>Status</th>
+									<th>SHA1 Fingerprint</th>
+									<th>Serial Number</th>
+									<th>Created</th>
+									<th>Expires</th>
+							  </tr>
+						</thead>
+						 
+						<tbody>
+						  
+						{% for c in revoked_cert_list %}
+						   
+						<tr class="danger">
+							  <td>{{ c.email }}</td>
+							  <td>{{ c.category }}</td>
+							  <td><a   href="{{c.public_cert_status_url}}">{{ c.status }}</a> |
+							  <a  href="{{c.public_cert_status_sha1_url}}">
+							  sha1-digest</a>
+							  
+							  </td>
+							  <td>{{ c.sha1_fingerprint|slice:":30"}} <br>
+								  {{c.sha1_fingerprint|slice:"30:"}}</td>
+							  <td>{{ c.serial_number }}</td>
+							  <td>{{ c.creation_date }}</td>
+							  <td>{{ c.expiration_date }}</td>
+						</tr>
+						
+						{% endfor %}
+						</tbody>
+				  </table>
+			</div>
+	  </div>
+</div>
 
 
   

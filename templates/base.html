@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+{% load static %}
 <head>
 	{% load i18n %}
         <title>
@@ -20,26 +21,21 @@
       
         {% include "include/top-nav.html" %}
      
-         <div id="messages">
-      {% if messages %}
-        {% for message in messages %}
-          <div class="alert alert-{{message.tags}}">
-            <a class="close" data-dismiss="alert">×</a>
-            {{message}}
-          </div>
-        {% endfor %}
-      {% endif %}
-    </div>
-       
-               <div class="container">
-      
+
       {% block content %}
         {% if template %}{% include template %}{% endif %}
         {{ content|safe }}
       {% endblock %}
-    </div>
+   
                         
         {% include "include/footer.html" %}
+
+<!-- JavaScript -->
+    <script src="{% static "modern-business/js/jquery-1.11.0.js" %}"></script>
+    <script src="{% static "modern-business/js/bootstrap.js"  %}"></script>
+    {% block ExtraJSFoot %}
+	
+	{% endblock %}
 
 </body>
 
