@@ -22,14 +22,17 @@ urlpatterns = patterns('',
     url(r'revoke-endpoint/(?P<serial_number>\S+)', revoke_endpoint_certificate,
                         name="revoke_endpoint_certificate"),
     
-    url(r'verify-endpoint/(?P<serial_number>\S+)', verify_endpoint_certificate,
-                        name="verify_domain_certificate"),    
+   
     
     url(r'revoke-trust-anchor/(?P<serial_number>\S+)', revoke_trust_anchor_certificate,
                         name="revoke_trust_anchor_certificate"),    
     
     url(r'verify-anchor/(?P<serial_number>\S+)', verify_anchor_certificate,
                         name="verify_anchor_certificate"),    
+    
+    url(r'verify-endpoint/(?P<serial_number>\S+)', verify_endpoint_certificate,
+                        name="verify_domain_certificate"), 
+    
     
     url(r'view-anchor/(?P<serial_number>\S+)', view_anchor,
                         name="view_anchor_certificate"),
