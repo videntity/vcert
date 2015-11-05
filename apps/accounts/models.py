@@ -8,9 +8,7 @@ from django.contrib.auth.models import User
 from datetime import date, datetime, timedelta
 from localflavor.us.models import PhoneNumberField
 from localflavor.us.us_states import US_STATES
-import string
-import random
-import uuid
+import string, random, uuid
 from emails import send_password_reset_url_via_email, send_signup_key_via_email
 from django.core.mail import send_mail, EmailMessage
 from django.utils.translation import ugettext_lazy as _
@@ -53,7 +51,7 @@ TERM_CHOICES = ( (1,'1 Year'),
 
 class Invitation(models.Model):
     code   = models.CharField(max_length = 10, unique=True)
-    email  = models.EmailField(blank=True)
+    email  = models.EmailField()
     valid = models.BooleanField(default=True)
     
     def __unicode__(self):
@@ -68,10 +66,10 @@ class Invitation(models.Model):
         <head>
         </head>
         <body>
-        Congratulations. You have been invited to join DirectCA.org.<br>
+        You have been invited to join DirectCA.org.<br>
         
         You may now register 
-        <a href="https://console.directca.org/accounts/register">register</a>
+        <a href="%s/accounts/register">register</a>
         with the invitation code: 
         
         <h2>
@@ -79,16 +77,17 @@ class Invitation(models.Model):
         </h2>
         
         <p>
-        DirectCA.org is a certificate authority setup exclusively for Direct
+        %s is a certificate authority setup exclusively for Direct
         testing. DO NOT USE THIS CA FOR PRODUCTION PURPOSES. DirectCA is
         beta software and is provided as a free service without any warranty.
         Information contained herein is not vetted or verified. 
         </p>
         </body>
         </html>
-        """ % (self.code,)
+        """ % (settings.HOSTNAME_URL, self.code, settings.ORGANIZATION_NAME)
         if settings.SEND_CA_EMAIL:
-            subj = "[DirectCA] Congratulations. Invitation Code: %s" % (self.code)
+            subj = "[%s] Invitation Code: %s" % (settings.ORGANIZATION_NAME,
+                                                 self.code)
             
             msg = EmailMessage(subj, msg, settings.EMAIL_HOST_USER,
                            [self.email, ])            
@@ -103,11 +102,11 @@ class UserProfile(models.Model):
     invitation_code             = models.CharField(max_length = 20)
     max_num_domains             = models.IntegerField(default = 8)
     contract_term_years         = models.IntegerField(default = 1,
-                                            choices = TERM_CHOICES)
+                                        choices = TERM_CHOICES)
     pin                         = models.CharField(max_length = 4,
-                                                   blank = True, default = "")
+                                        blank = True, default = "")
     mobile_phone_number         = PhoneNumberField(max_length = 15,
-                                                   blank = True)
+                                        blank = True)
     organization_name           = models.CharField(max_length = 256)
     country                     = models.CharField(max_length = 2, default ="US")
     state                       = models.CharField(blank=True, max_length=2,
