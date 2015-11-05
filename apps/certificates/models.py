@@ -134,7 +134,8 @@ class TrustAnchorCertificate(MPTTModel):
                                                blank=True)
     revoke                  = models.BooleanField(default=False)
     expired                 = models.BooleanField(default=False, editable=False)
-    verified                = models.BooleanField(default=False,)
+    verified                = models.BooleanField(default=False,
+                                    help_text="Check this box to verify the certificate.")
     verified_message_sent   = models.BooleanField(default=False,)
     rcsp_response           = models.TextField(max_length=512,
                                          blank=True, default="")
@@ -717,7 +718,8 @@ class EndpointCertificate(models.Model):
     revoke                      = models.BooleanField(default=False)
     revoked_note                = models.TextField(max_length=512,
                                          blank=True, default="")
-    verified                    = models.BooleanField(default=False)
+    verified                    = models.BooleanField(default=False,
+                                    help_text="Check this box to verify the certificate.")
     verified_message_sent       = models.BooleanField(default=False)
     rcsp_response               = models.TextField(max_length=512,
                                          blank=True, default="")
