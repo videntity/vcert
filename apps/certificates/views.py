@@ -9,10 +9,10 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.models import User
 from ..accounts.models import UserProfile
 from django.utils.translation import ugettext_lazy as _
-from models import DomainBoundCertificate, TrustAnchorCertificate
-from forms import (TrustAnchorCertificateForm, DomainBoundCertificateForm,
-            RevokeDomainBoundCertificateForm, RevokeTrustAnchorCertificateForm,
-            VerifyDomainBoundCertificateForm, VerifyTrustAnchorCertificateForm)
+from models import EndpointCertificate, TrustAnchorCertificate
+from forms import (TrustAnchorCertificateForm, EndpointCertificateForm,
+            RevokeEndpointCertificateForm, RevokeTrustAnchorCertificateForm,
+            VerifyEndpointCertificateForm, VerifyTrustAnchorCertificateForm)
 from mptt.utils import drilldown_tree_for_node, previous_current_next
 from django.db.models import Q
 
@@ -141,28 +141,28 @@ def view_anchor(request, serial_number):
     revoked_anchors = descendant_revoked_anchors
     
     
-    active_endpoints = DomainBoundCertificate.objects.filter(~Q(trust_anchor__parent = None),
+    active_endpoints = EndpointCertificate.objects.filter(~Q(trust_anchor__parent = None),
                                                              status="good"
                                                              ) | \
-                       DomainBoundCertificate.objects.filter(~Q(trust_anchor__parent = None),
+                       EndpointCertificate.objects.filter(~Q(trust_anchor__parent = None),
                                                              status="unverified"
                                                              )| \
-                       DomainBoundCertificate.objects.filter(trust_anchor = anchor,
+                       EndpointCertificate.objects.filter(trust_anchor = anchor,
                                                              status="good"
                                                              )| \
-                       DomainBoundCertificate.objects.filter(trust_anchor = anchor,
+                       EndpointCertificate.objects.filter(trust_anchor = anchor,
                                                              status="unverified"
                                                              )
      
     
-    revoked_endpoints = DomainBoundCertificate.objects.filter(~Q(trust_anchor__parent = None),
+    revoked_endpoints = EndpointCertificate.objects.filter(~Q(trust_anchor__parent = None),
                                                              status="revoked")
-    # DomainBoundCertificate.objects.filter(trust_anchor__parent=!None
+    # EndpointCertificate.objects.filter(trust_anchor__parent=!None
     #                                                     status="good") | \
-    #                     DomainBoundCertificate.objects.filter(trust_anchor=anchor,
+    #                     EndpointCertificate.objects.filter(trust_anchor=anchor,
     #                                                 status="unverified")
     #     
-    # revoked_endpoints = DomainBoundCertificate.objects.filter(trust_anchor=anchor,
+    # revoked_endpoints = EndpointCertificate.objects.filter(trust_anchor=anchor,
     #                                                     status="revoked")   
     revoked_certs = revoked_anchors + list(revoked_endpoints)
         
@@ -182,7 +182,7 @@ def create_endpoint_certificate(request, serial_number):
                                owner = request.user)
     name = _("Create an Endpoint Certificate for ") + ta.common_name
     if request.method == 'POST':
-        form = DomainBoundCertificateForm(request.POST)
+        form = EndpointCertificateForm(request.POST)
         if form.is_valid():
             c = form.save(commit = False)
             c.common_name = c.dns
@@ -216,7 +216,7 @@ def create_endpoint_certificate(request, serial_number):
            #'dns': dnsguess,
            }
     context= {'name':name,
-              'form': DomainBoundCertificateForm(initial=data)}
+              'form': EndpointCertificateForm(initial=data)}
     return render_to_response('generic/bootstrapform.html',
                               RequestContext(request, context,))
 
@@ -278,7 +278,7 @@ def revoke_trust_anchor_certificate(request, serial_number):
         form = RevokeTrustAnchorCertificateForm(request.POST, instance = ta)
         if form.is_valid():
             m = form.save()
-            children = DomainBoundCertificate.objects.filter(trust_anchor = ta)
+            children = EndpointCertificate.objects.filter(trust_anchor = ta)
             for c in children:
                 c.revoke = True
                 c.save()
@@ -308,11 +308,11 @@ def revoke_trust_anchor_certificate(request, serial_number):
 def revoke_endpoint_certificate(request, serial_number):
     
     name = _("Revoke a Domain Bound Certificate")
-    dbc = get_object_or_404(DomainBoundCertificate, serial_number=serial_number,
+    dbc = get_object_or_404(EndpointCertificate, serial_number=serial_number,
                                trust_anchor__owner = request.user)
         
     if request.method == 'POST':
-        form = RevokeDomainBoundCertificateForm(request.POST, instance = dbc)
+        form = RevokeEndpointCertificateForm(request.POST, instance = dbc)
         if form.is_valid():
             m = form.save()
             if m.status == "revoked":
@@ -332,7 +332,7 @@ def revoke_endpoint_certificate(request, serial_number):
             
     #this is a GET
     context= {'name': name,
-              'form': RevokeDomainBoundCertificateForm(instance = dbc)
+              'form': RevokeEndpointCertificateForm(instance = dbc)
               }
     return render_to_response('generic/bootstrapform.html',
                               RequestContext(request, context,))
@@ -381,11 +381,11 @@ def verify_anchor_certificate(request, serial_number):
 def verify_endpoint_certificate(request, serial_number):
     
     name = _("Verify a Domain Bound Certificate")
-    e = get_object_or_404(DomainBoundCertificate, serial_number=serial_number,
+    e = get_object_or_404(EndpointCertificate, serial_number=serial_number,
                                trust_anchor__owner = request.user)
         
     if request.method == 'POST':
-        form = VerifyDomainBoundCertificateForm(request.POST, instance = e)
+        form = VerifyEndpointCertificateForm(request.POST, instance = e)
         if form.is_valid():
             m = form.save()
             if m.verified:
@@ -404,7 +404,7 @@ def verify_endpoint_certificate(request, serial_number):
                                             RequestContext(request))
     #this is a GET
     context= {'name': name,
-              'form': VerifyDomainBoundCertificateForm(instance = e)
+              'form': VerifyEndpointCertificateForm(instance = e)
               }
     return render_to_response('generic/bootstrapform.html',
                               RequestContext(request, context,))

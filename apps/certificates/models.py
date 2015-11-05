@@ -620,7 +620,7 @@ class TrustAnchorCertificate(MPTTModel):
         
         
 
-class DomainBoundCertificate(models.Model):
+class EndpointCertificate(models.Model):
     trust_anchor      = models.ForeignKey(TrustAnchorCertificate)
     common_name       = models.CharField(max_length=512, default=uuid_default_common_name)
     status            = models.CharField(max_length=10, default="incomplete",
@@ -817,7 +817,7 @@ class DomainBoundCertificate(models.Model):
                 send_verifier_email("endpoint", self.organization, self.serial_number,
                                     self.common_name)
             
-            super(DomainBoundCertificate, self).save(**kwargs)
+            super(EndpointCertificate, self).save(**kwargs)
             return
         #The verification routine publishes the certs ------------------------
         if self.verified and not self.verified_message_sent and \
@@ -1104,7 +1104,7 @@ class DomainBoundCertificate(models.Model):
             
             #send the verification email.
             self.verified_message_sent = True
-            super(DomainBoundCertificate, self).save(**kwargs)
+            super(EndpointCertificate, self).save(**kwargs)
             return
         # REVOKED ------------------------------------------------------------------
         if self.revoke and self.status != "revoked":
@@ -1196,7 +1196,7 @@ class DomainBoundCertificate(models.Model):
 
         
          
-        super(DomainBoundCertificate, self).save(**kwargs)
+        super(EndpointCertificate, self).save(**kwargs)
 
 
 class CertificateRevocationList(models.Model):

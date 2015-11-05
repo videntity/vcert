@@ -1,6 +1,6 @@
 from django.contrib import admin
 from mptt.admin import MPTTModelAdmin
-from models import ( DomainBoundCertificate, TrustAnchorCertificate,
+from models import ( EndpointCertificate, TrustAnchorCertificate,
                     CertificateRevocationList, AnchorCertificateRevocationList)
 
 
@@ -11,7 +11,7 @@ class TreeViewAnchorCertificate(TrustAnchorCertificate):
         verbose_name = "Tree View of Anchor"
 
 
-class DomainBoundCertificateAdmin(admin.ModelAdmin):
+class EndpointCertificateAdmin(admin.ModelAdmin):
     
     list_display = ('common_name', 'verified','serial_number',
                     'organization', 'creation_date', 'expiration_date')
@@ -19,7 +19,7 @@ class DomainBoundCertificateAdmin(admin.ModelAdmin):
     search_fields = ('common_name','status', 'verified','serial_number',
                      'organization', 'creation_date', 'expiration_date')
     
-admin.site.register(DomainBoundCertificate, DomainBoundCertificateAdmin)
+admin.site.register(EndpointCertificate, EndpointCertificateAdmin)
 
 
 class TrustAnchorCertificateAdmin(admin.ModelAdmin):
