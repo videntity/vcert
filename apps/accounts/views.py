@@ -42,20 +42,20 @@ def simple_login(request):
                 else:
                    messages.error(request,
                         _("Your account is inactive so you may not log in."))
-                   return render_to_response('accounts/login.html',
+                   return render_to_response('login.html',
                                             {'form': form},
                                             RequestContext(request))
             else:
                 messages.error(request, _("Invalid username or password."))
-                return render_to_response('accounts/login.html',
+                return render_to_response('login.html',
                                     {'form': form},
                                     RequestContext(request))
 
         else:
-         return render_to_response('accounts/login.html',
+         return render_to_response('login.html',
                               RequestContext(request, {'form': form}))
     #this is a GET
-    return render_to_response('accounts/login.html',
+    return render_to_response('login.html',
                               {'form': LoginForm(),
                                'account_request_text': settings.ACCOUNT_REQUEST_TEXT,
                                'ca_hostname': settings.CA_HOSTNAME,
@@ -66,15 +66,10 @@ def simple_login(request):
 
 
 
-def reset_password(request, reset_password_key=None):
-    try:
-        vprk=ValidPasswordResetKey.objects.get(
-                                        reset_password_key=reset_password_key)
-        
-    except:
-        return render_to_response('accounts/invalid-key.html',
-                              RequestContext(request,
-                                             {}))
+def reset_password(request, reset_password_key):
+    
+    vprk=get_object_or_404(ValidPasswordResetKey, reset_password_key=reset_password_key) 
+    
     if request.method == 'POST':
         form = PasswordResetForm(request.POST)
         if form.is_valid():
@@ -82,22 +77,18 @@ def reset_password(request, reset_password_key=None):
             vprk.user.save()
             vprk.delete()
             logout(request)
-            return render_to_response('accounts/reset-password-success.html',
-                              RequestContext(request,{}))
+            messages.success(request, "Password reset successful.")
+            return HttpResponseRedirect(reverse('login'))
         else:
-         return render_to_response('accounts/reset-password.html',
+             return render_to_response('generic/bootstrapform.html',
                         RequestContext(request, {'form': form,
                             'reset_password_key': reset_password_key}))  
         
-    return render_to_response('accounts/reset-password.html',
+    return render_to_response('generic/bootstrapform.html',
                               RequestContext(request,
                                     {'form': PasswordResetForm(),
                                     'reset_password_key': reset_password_key}))
         
-
-
-
-
 
 
 def password_reset_request(request):
@@ -107,19 +98,33 @@ def password_reset_request(request):
         
         if form.is_valid():  
             data = form.cleaned_data
-            return render_to_response('accounts/password-reset-request.html',
-                              RequestContext(request,
-                                             {'form': form,
-                                              }))
+            
+            try:
+                u=User.objects.get(email=data['email'])
+            except(User.DoesNotExist):
+                messages.error(request, "A user with the email supplied does not exist.")
+                return HttpResponseRedirect(reverse('password_reset_request'))
+            #success
+            k=ValidPasswordResetKey.objects.create(user=u)
+            messages.info(request, "Please check your email for a special link to rest your password.")
+            return HttpResponseRedirect(reverse('login'))
+        
+        else:
+             return render_to_response('generic/bootstrapform.html',
+                                      RequestContext(request, {'form': form}))      
+        
     else:
-        return render_to_response('accounts/password-reset-request.html', 
+        return render_to_response('generic/bootstrapform.html', 
                              {'form': PasswordResetRequestForm()},
                               context_instance = RequestContext(request))
     
 
 
-
-def signup(request):
+def register(request):
+    name ="Register for an Account"
+    additional_info = """You need an invitation code to create an account.
+    If you do not have an invitation code you may 
+    <a href="%s">request one</a>""" % (settings.REQUEST_ACCOUNT_URL)
     if request.method == 'POST':
         form = SignupForm(request.POST)
         if form.is_valid():
@@ -128,17 +133,20 @@ def signup(request):
           return HttpResponseRedirect(reverse('login'))
         else:
             #return the bound form with errors
-            return render_to_response('accounts/signup.html',
-                                      RequestContext(request, {'form': form}))      
+            return render_to_response('generic/bootstrapform.html',
+                                      RequestContext(request, {'form': form,
+                                                               'name': name}))      
     else:  
        #this is an HTTP  GET
-       return render_to_response('accounts/signup.html',
+       return render_to_response('generic/bootstrapform.html',
                                  RequestContext(request,
-                                {'form': SignupForm()}))     
+                                {'form': SignupForm(),
+                                 'name': name,
+                                 'additional_info': additional_info}))     
 
 
 def verify_email(request, verification_key,
-                 template_name='accounts/activate.html',
+                 template_name='activate.html',
                  extra_context=None):
     verification_key = verification_key.lower() # Normalize before trying anything with it.
     account = verify(verification_key)
@@ -209,9 +217,6 @@ def signup_verify(request, signup_key=None):
     
     if validate_signup(signup_key=signup_key):
         messages.success(request, "Your account has been activated. You may now login.")
-        return HttpResponseRedirect(reverse('login'))
     else:
-        return render_to_response('accounts/invalid-key.html',
-                              RequestContext(request,
-                                             {}))
-    
+        messages.error(request, "Invalid verification URL.")    
+    return HttpResponseRedirect(reverse('login'))
