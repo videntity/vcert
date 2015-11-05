@@ -6,7 +6,7 @@ from django.core.mail import EmailMessage,  EmailMultiAlternatives
 
 
 def send_password_reset_url_via_email(user, reset_key):
-    subject = "[%s]Your password reset request" % (settings.ORGANIZATION_NAME)    
+    subject = "[%s] Password reset request" % (settings.ORGANIZATION_NAME)    
     from_email = settings.EMAIL_HOST_USER
     to = user.email
     headers = {'Reply-To': from_email}
@@ -29,7 +29,7 @@ def send_password_reset_url_via_email(user, reset_key):
 def send_signup_key_via_email(user, signup_key):
     
     print "send mail"
-    subject = "[%s]Verify your email to get started." % (settings.ORGANIZATION_NAME)    
+    subject = "[%s] Verify your email" % (settings.ORGANIZATION_NAME)    
     from_email = settings.EMAIL_HOST_USER
     to = user.email
     headers = {'Reply-To': from_email}
