@@ -221,6 +221,8 @@ AWS_BUCKET =''
 #Org  and CA Settings -----------------------------------------------------
 # Send outbound emails such as #verification notification and more
 SEND_CA_EMAIL       = False
+MIN_PASSWORD_LEN = 8
+SIGNUP_TIMEOUT_DAYS = 3
 ORGANIZATION_NAME = "Sample-CA"
 CA_COMMON_NAME = "ca.directca.org"
 LOCATION_NAME = "Anywhere, USA"

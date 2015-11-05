@@ -5,7 +5,8 @@
 from django.conf import settings
 from django.db import models
 import datetime, os, json
-import pdb
+import uuid
+import sha
 from django.contrib.auth.models import User
 from localflavor.us.models import PhoneNumberField
 from localflavor.us.us_states import US_STATES
@@ -13,15 +14,15 @@ from cautils import (create_endpoint_certificate, create_trust_anchor_certificat
                      revoke, build_crl, write_verification_message,
                      chain_keys_in_list, create_crl_conf, write_x5c_message,
                      revoke_from_anchor, build_anchor_crl)
-import uuid
-import sha
-from fileutils import SimpleS3
-from django.core.mail import send_mail, EmailMessage
-from shutil import copyfile
-from django.forms.models import model_to_dict
-import mptt.utils
 
+from fileutils import SimpleS3
+from shutil import copyfile
+import mptt.utils
 from mptt.models import MPTTModel, TreeForeignKey
+from emails import (send_verifier_email, send_trust_anchor_confirmation_email,
+                    send_endpoint_confirmation_email)
+
+
 
 def uuid_default_common_name():
     s = "NO-CN-%s" % (str(uuid.uuid4()))
@@ -133,7 +134,8 @@ class TrustAnchorCertificate(MPTTModel):
                                                blank=True)
     revoke                  = models.BooleanField(default=False)
     expired                 = models.BooleanField(default=False, editable=False)
-    verified                = models.BooleanField(default=False,)
+    verified                = models.BooleanField(default=False,
+                                    help_text="Check this box to verify the certificate.")
     verified_message_sent   = models.BooleanField(default=False,)
     rcsp_response           = models.TextField(max_length=512,
                                          blank=True, default="")
@@ -233,33 +235,13 @@ class TrustAnchorCertificate(MPTTModel):
             self.details            = result['details']
             
             #send the verifier an email notification
-            if settings.SEND_CA_EMAIL:
-                msg = """
-                <html>
-                <head>
-                </head>
-                <body>
-                A new Direct Trust Anchor was created by %s and requires your review.
-                Here is a link for the domain %s:
-                <ul>
-                <li><a href="/admin/certificates/trustanchorcertificate/%s">%s</a></li>
-                </ul>
-                </body>
-                </html>
-                """ % (self.organization, self.domain, self.id, self.domain)
-            
-                subject = "[%s]A new Trust Anchor certificate requires verification" % (settings.ORGANIZATION_NAME)
-                msg = EmailMessage(subject,
-                               msg,
-                               settings.EMAIL_HOST_USER,
-                               [settings.CA_VERIFIER_EMAIL,])            
-                msg.content_subtype = "html"  # Main content is now text/html
-                msg.send()
-                        
-            
-            
-            # Create the CRL config file
-            crl_result = create_crl_conf(
+            if self.status=="unverified":
+                send_verifier_email("anchor", self.organization,
+                                self.serial_number, self.common_name )
+           
+             
+                # Create the CRL config file
+                crl_result = create_crl_conf(
                         common_name         = self.common_name,
                         email               = self.email,
                         dns                 = self.dns,
@@ -529,44 +511,17 @@ class TrustAnchorCertificate(MPTTModel):
                                                        "key": key})
             
             
-            
-            
-            
             """ Mark the certificate as verified """
             self.verified = True
             
-            #send the verification email.
-            msg = """
-            <html>
-            <head>
-            </head>
-            <body>
-            Congratulations. Your trust anchor has for %s been verified.
-            Here are some links to your public certificates and related status
-            information.
+            #send the confirmation email.
+            send_trust_anchor_confirmation_email(self.common_name,
+                                                 self.public_cert_pem_url,
+                                         self.public_cert_der_url,
+                                         self.owner.email,
+                                         self.contact_email)
             
-            <ul>
-            <li><a href="%s">PEM File                             - %s</a></li>
-            <li><a href="%s">DER File                             - %s</a></li>
-            <li><a href="%s">Status                               - %s</a></li>
-            </ul>
-            </body>
-            </html>
-            """ % (self.domain,
-                   self.public_cert_pem_url,self.public_cert_pem_url,
-                   self.public_cert_der_url,self.public_cert_der_url,
-                   self.public_cert_status_url,self.public_cert_status_url,
-                      )
-            if settings.SEND_CA_EMAIL:
-                subject = "[%s]Your Trust Anchor Certificate has been verified" %(settings.ORGANIZATION_NAME)
-                msg = EmailMessage(subject,
-                               msg,
-                               settings.EMAIL_HOST_USER,
-                               [self.owner.email, self.contact_email])            
-                msg.content_subtype = "html"  # Main content is now text/html
-                msg.send()
-            
-            
+
             self.verified_message_sent = True
         
         #REVOKE --------------------------------------------------------------------------------------------    
@@ -664,56 +619,11 @@ class TrustAnchorCertificate(MPTTModel):
             
         super(TrustAnchorCertificate, self).save(**kwargs)
         
-    # def delete(self, **kwargs):
-    #     self.revoked = True
-    #     self.status = "revoked"
-    # 
-    #     # Build the RCSP response
-    #     rcsp_result = write_verification_message(self.serial_number,
-    #                                          self.common_name,
-    #                                         "revoked",
-    #                                         self.sha1_fingerprint,
-    #                                         )
-    #     #Write it to db
-    #     self.rcsp_response = rcsp_result
-    #     fn = "%s.json" % (self.serial_number)
-    #     #Write it to file
-    #     fp = os.path.join(self.completed_dir_path, fn)
-    #     
-    #     f = open(fp, "w")
-    #     f.write(str(rcsp_result))
-    #     f.close()
-    #     
-    #     #Upload the RCSP file to S3
-    #     s=SimpleS3()
-    #     if "S3" in settings.CA_PUBLICATION_OPTIONS:
-    #         url = s.store_in_s3(fn, fp, bucket=settings.RCSP_BUCKET,
-    #                         public=True)
-    # 
-    #         
-    #     #Calculate the SHA1 fingerprint & write it to a file
-    #     digestsha1 = json.dumps(sha.sha1_from_filepath(fp), indent =4)
-    #     fn = "%s-sha1.json" % (self.serial_number)
-    #     fp = os.path.join(self.completed_dir_path, fn)
-    #     f = open(fp, "w")
-    #     f.write(str(digestsha1)) 
-    #     f.close()
-    #         
-    #     #Upload the RCSP SHA! Digest to S3
-    #     if "S3" in settings.CA_PUBLICATION_OPTIONS:
-    #         url = s.store_in_s3(fn, fp, bucket=settings.RCSPSHA1_BUCKET,
-    #                         public=True)
-    #     
-    #     #Revoke the cert.
-    #     revoke(self)
-    #     super(TrustAnchorCertificate, self).save(**kwargs)
         
 
-class DomainBoundCertificate(models.Model):
+class EndpointCertificate(models.Model):
     trust_anchor      = models.ForeignKey(TrustAnchorCertificate)
     common_name       = models.CharField(max_length=512, default=uuid_default_common_name)
-    
-    
     status            = models.CharField(max_length=10, default="incomplete",
                                          choices=STATUS_CHOICES)
     sha256_digest     = models.CharField(max_length=64, default="", blank=True,)
@@ -782,13 +692,11 @@ class DomainBoundCertificate(models.Model):
     public_cert_der_s3         = models.CharField(max_length=1024, default="",
                                                blank=True)
     
-        
     public_cert_pem_url         = models.CharField(max_length=1024, default="",
                                                blank=True)
     public_cert_pem_s3         = models.CharField(max_length=1024, default="",
                                                blank=True)
     
-
     private_p12_url            = models.CharField(max_length=1024, default="",
                                                blank=True)
     
@@ -810,7 +718,8 @@ class DomainBoundCertificate(models.Model):
     revoke                      = models.BooleanField(default=False)
     revoked_note                = models.TextField(max_length=512,
                                          blank=True, default="")
-    verified                    = models.BooleanField(default=False)
+    verified                    = models.BooleanField(default=False,
+                                    help_text="Check this box to verify the certificate.")
     verified_message_sent       = models.BooleanField(default=False)
     rcsp_response               = models.TextField(max_length=512,
                                          blank=True, default="")
@@ -832,9 +741,7 @@ class DomainBoundCertificate(models.Model):
     
 
     def __unicode__(self):
-        return '%s (%s) Status=%s, Created %s, Issued by %s' % (self.domain,
-                            self.serial_number, self.status,  self.creation_date,
-                            self.trust_anchor.organization)
+        return '%s' % (self.domain)
     class Meta:
         get_latest_by = "creation_date"
         ordering = ('-creation_date',)
@@ -864,13 +771,14 @@ class DomainBoundCertificate(models.Model):
         
     def save(self, **kwargs):
         if not self.sha256_digest and self.status=="incomplete":
-            print "We've only just begun...I'm new."
+            #"We've only just begun...I'm new."
             
             today = datetime.date.today ()
             self.expiration_date = today + datetime.timedelta(
                                                     days=self.expire_days)
             
-            
+            if not self.common_name:
+                self.common_name = self.dns
             result = create_endpoint_certificate(
                         anchor              = self.trust_anchor,
                         common_name         = self.common_name,
@@ -907,32 +815,13 @@ class DomainBoundCertificate(models.Model):
             self.chain_url           = result['chain_url']
             
             #send the verifier an email notification
-            msg = """
-            <html>
-            <head>
-            </head>
-            <body>
-            A new Direct endpoint certificate was created by %s and requires your review.
-            Here is a link:
-            <ul>
-            <li><a href="%s/admin/certificates/domainboundcertificate/%s">%s</a></li>
-            </ul>
-            </body>
-            </html>
-            """ % (self.organization, self.id, settings.HOSTNAME_URL, self.domain,
-                   )
-            if settings.SEND_CA_EMAIL :
-                subject = "[%s]A New Direct Endpoint Certificate requires verification" % (settings.ORGANIZATION_NAME)
-                msg = EmailMessage(subject,  msg,
-                               settings.EMAIL_HOST_USER,
-                               [settings.CA_VERIFIER_EMAIL,])            
-                msg.content_subtype = "html"  # Main content is now text/html
-                msg.send()
+            if self.status == "unverified":
+                send_verifier_email("endpoint", self.organization, self.serial_number,
+                                    self.common_name)
             
-            
-            super(DomainBoundCertificate, self).save(**kwargs)
+            super(EndpointCertificate, self).save(**kwargs)
             return
-        
+        #The verification routine publishes the certs ------------------------
         if self.verified and not self.verified_message_sent and \
            self.status in  ('unverified', 'good'):
             
@@ -1112,7 +1001,7 @@ class DomainBoundCertificate(models.Model):
                 os.chdir(settings.BASE_DIR)
                 self.public_cert_der_url = "%s%s" % (settings.PUBLIC_URL_PREFIX,fn)
             
-            #PRIVATE CERTS -----------------------------------------------------------------------
+            #PRIVATE CERTS ----------------------------------------------------
             random_string = str(uuid.uuid4())
             
             #P12 --------------------------------------------------------------
@@ -1139,12 +1028,13 @@ class DomainBoundCertificate(models.Model):
                 os.umask(0000)
                 copyfile(fp, dest_file)
                 os.chdir(settings.BASE_DIR)
-                self.private_p12_url = "%s%s/%s" % (settings.PRIVATE_URL_PREFIX, random_string, fn)
+                self.private_p12_url = "%s%s/%s" % (settings.PRIVATE_URL_PREFIX,
+                                                    random_string, fn)
             
             #DER --------------------------------------------------------------
             fn = "%s.der" % (self.dns)
-            key = "%s/%s/%s/%s" % (random_string, self.trust_anchor.owner.username, self.dns,
-                                   fn )
+            key = "%s/%s/%s/%s" % (random_string, self.trust_anchor.owner.username,
+                                   self.dns, fn )
             fp = os.path.join(self.completed_dir_path, fn)
             #print "S3 --------------------", key, fp
             if "S3" in settings.CA_PUBLICATION_OPTIONS:
@@ -1206,48 +1096,17 @@ class DomainBoundCertificate(models.Model):
             #                                              "key": key })
             #
             #
-            #send the verification email.
-            msg = """
-            <html>
-            <head>
-            </head>
-            <body>
-            Congratulations. Your domain bound certificate has been verified.
-            Below are links to your public certificates and related status information.
-            Please login into <a href="%s>%s</a>
-            to retrieve your private certificates for this domain.
-            <ul>
-                <li><a href="%s">PEM File -  %s  </a></li>
-                <li><a href="%s">DER File -  %s </a></li>
-                <li><a href="%s">Status   -  %s  </a></li>
-
-            </ul>
             
-            <p>For security purposes you must
-            <a href="%s">login</a> and download the
-            private certificates within 72 hours of this email.  
-            </p>
-            
-            </body>
-            </html>
-            """ % (settings.HOSTNAME_URL,        settings.HOSTNAME_URL,
-                   self.public_cert_pem_url,            self.public_cert_pem_url,
-                   self.public_cert_der_url,            self.public_cert_der_url,
-                   self.public_cert_status_url,         self.public_cert_status_url,
-                   settings.HOSTNAME_URL
-                   )
-            if settings.SEND_CA_EMAIL:
-                subject = "[%s]Your Direct endpoint Certificate has been verified"  % (settings.ORGANIZATION_NAME)
-                msg = EmailMessage(subject,msg,
-                               settings.EMAIL_HOST_USER,
-                               [self.trust_anchor.owner.email, self.contact_email])            
-                msg.content_subtype = "html"  # Main content is now text/html
-                msg.send()
-            
+            #send the confirmation email. -----------------------------------
+            send_endpoint_confirmation_email(self.common_name,
+                                             self.public_cert_pem_url,
+                                             self.public_cert_der_url,
+                                             self.trust_anchor.owner.email,
+                                             self.contact_email)
             
             #send the verification email.
             self.verified_message_sent = True
-            super(DomainBoundCertificate, self).save(**kwargs)
+            super(EndpointCertificate, self).save(**kwargs)
             return
         # REVOKED ------------------------------------------------------------------
         if self.revoke and self.status != "revoked":
@@ -1339,64 +1198,19 @@ class DomainBoundCertificate(models.Model):
 
         
          
-        super(DomainBoundCertificate, self).save(**kwargs)
-
-    # def delete(self, **kwargs):
-    #     self.revoke = True
-    #     self.status = "revoked"
-    #      # Get the response
-    #     rcsp_result = write_verification_message(self.serial_number,
-    #                                              self.common_name,
-    #                                             "revoked",
-    #                                             self.sha1_fingerprint,
-    #                                             )
-    #     #Write it to db
-    #     self.rcsp_response = rcsp_result
-    #     fn = "%s.json" % (self.serial_number)
-    #     #Write it to file
-    #     fp = os.path.join(settings.CA_INPROCESS_DIR, fn)
-    #     
-    #     f = open(fp, "w")
-    #     f.write(str(rcsp_result))
-    #     f.close()
-    #     
-    #     #Upload the RCSP file to S3
-    #     s=SimpleS3()
-    #     if "S3" in settings.CA_PUBLICATION_OPTIONS:
-    #         url = s.store_in_s3(fn, fp, bucket=settings.RCSP_BUCKET,
-    #                         public=True)
-    # 
-    #         
-    #     #Calculate the SHA1 fingerprint & write it to a file
-    #     digestsha1 = json.dumps(sha.sha1_from_filepath(fp), indent =4)
-    #     fn = "%s-sha1.json" % (self.serial_number)
-    #     fp = os.path.join(settings.CA_INPROCESS_DIR, fn)
-    #     f = open(fp, "w")
-    #     f.write(str(digestsha1)) 
-    #     f.close()
-    #         
-    #     #Upload the RCSP SHA1 Digest to S3
-    #     if "S3" in settings.CA_PUBLICATION_OPTIONS:
-    #         url = s.store_in_s3(fn, fp, bucket=settings.RCSPSHA1_BUCKET,
-    #                         public=True)
-    #     revoke_from_anchor(self)
-    #     revoke(self)
-    #     
-    #     super(DomainBoundCertificate, self).save(**kwargs)
-
+        super(EndpointCertificate, self).save(**kwargs)
 
 
 class CertificateRevocationList(models.Model):
     
-    url                 = models.CharField(max_length=512, default="", blank=True)
-    local_path                 = models.CharField(max_length=512, default="", blank=True)
+    url                 = models.CharField(max_length=1024, default="", blank=True)
+    local_path          = models.CharField(max_length=1024, default="", blank=True)
     creation_datetime   = models.DateTimeField(auto_now_add=True)
     creation_date       = models.DateField(auto_now_add=True)
     
     
     def __unicode__(self):
-        return '%s Created @ %s.' % (self.id,
-                                                    self.creation_datetime)
+        return 'Root CA %s' % (settings.CA_COMMON_NAME)
     
     class Meta:
         get_latest_by = "creation_date"
@@ -1411,14 +1225,14 @@ class CertificateRevocationList(models.Model):
         
 class AnchorCertificateRevocationList(models.Model):
     trust_anchor        = models.ForeignKey(TrustAnchorCertificate)
-    url                 = models.CharField(max_length=512, default="", blank=True)
-    local_path          = models.CharField(max_length=512, default="", blank=True)
+    url                 = models.CharField(max_length=1024, default="", blank=True)
+    local_path          = models.CharField(max_length=1024, default="", blank=True)
     creation_datetime   = models.DateTimeField(auto_now_add=True)
     creation_date       = models.DateField(auto_now_add=True)
     
     
     def __unicode__(self):
-        return 'CRL %s created @ %s.' % (self.id, self.creation_datetime)
+        return '%s' % (self.trust_anchor)
     
     class Meta:
         get_latest_by = "creation_date"
