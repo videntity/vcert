@@ -207,7 +207,6 @@ MESSAGE_TAGS ={ messages.DEBUG: 'info',
 
 EMAIL_HOST_USER = 'vcert@example.com'
 HOSTNAME_URL = 'http://127.0.0.1:8000'
-EMAIL_BACKEND = 'django_ses.SESBackend'
 AWS_ACCESS_KEY_ID = ''
 AWS_SECRET_ACCESS_KEY = ''
 
