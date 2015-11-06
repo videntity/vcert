@@ -201,8 +201,6 @@ class TrustAnchorCertificate(MPTTModel):
             self.expiration_date = today + datetime.timedelta(
                                                     days=self.expire_days)
             
-            
-
             result = create_trust_anchor_certificate(
                                         common_name     = self.common_name,
                                         email           = self.email,
@@ -267,19 +265,17 @@ class TrustAnchorCertificate(MPTTModel):
             """This is the verify routine"""
             
             self.status = "good"
-            # Get the response
-            rcsp_result = write_verification_message(self.serial_number,
+            #RCSP ----------------------------------------------------------
+            # Get the rcsp_response and write it to db
+            self.rcsp_response = write_verification_message(self.serial_number,
                                                      self.common_name,
                                                     "good",
                                                     self.sha1_fingerprint)
-            #Write it to db
-            self.rcsp_response = rcsp_result
             fn = "%s.json" % (self.serial_number)
             #Write it to file
             fp = os.path.join(self.completed_dir_path, fn)
-            
             f = open(fp, "w")
-            f.write(str(rcsp_result))
+            f.write(str(self.rcsp_response))
             f.close()
             
             # #Upload the RCSP file to S3
@@ -386,13 +382,10 @@ class TrustAnchorCertificate(MPTTModel):
 
                 dest_file = os.path.join(dest, fn)
                 print "DESTFILE", dest_file
-                
-                
                 os.umask(0000)
                 copyfile(fp, dest_file)
                 os.chdir(self.completed_dir_path)
                 self.public_cert_x5c_url = "%s/%s" % (settings.X5C_URL_PREFIX,  fn)
-                
                 
                 # #Copy the chained pem -------------------------------
                 # dest = os.path.join(settings.LOCAL_CHAIN_PATH)

@@ -3,7 +3,7 @@ README
 
 `vcert`  A web-based certificate authority mangement system built atop OpenSSL.
 
-Open Source License: MPL See LICENSE.txt
+Open Source License: GPL v2
 
 Copyright Alan Viars 2013-2015
 

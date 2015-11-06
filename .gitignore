@@ -9,7 +9,7 @@ apps/certificates/ca/conf/serial*
 apps/certificates/ca/conf/serial
 *.csr
 apps/certificates/ca/inprocess/anchors/*
-apps/certificates/ca/inprocess/domain-bound/*
+apps/certificates/ca/inprocess/endpoints/*
 apps/certificates/ca/completed/*
 *.kpf
 apps/certificates/ca/signed-keys/
