@@ -17,7 +17,7 @@ under the hood.  The site DirectCA.org runs vcert. It was built specifically to
 build x509 certificates compatible with the Direct Project.  It is written in
 Python and Django and can run atop Apache2 or other webserver.
 
-`vcert` can be used to manage a trust anchor (i.e. a registration authority or
+`vcert` can be used to manage a trust anchors (i.e. a registration authority or
 HISP) or a root CA.
 
 `vcert` supports revocation via certificate revocation lists (CRLs). A CRL is
@@ -25,8 +25,8 @@ created for each trust anchor and is published to a URL.
 
 This software was designed to assist in testing for compliance with the Direct
 Project's Applicability Statement. Perhaps you are not working in Health IT at
-all and are just looking for a simple way to manage certificates.  You may well
-be able to use this project for that purpose.
+all and are just looking for a simple way to manage certificates.  You may be able
+to be able to use this for that purpose.
 
 CODE CONTRIBUTIONS & PULL REQUEST WELCOME! 
 
@@ -46,7 +46,7 @@ Here is how to get started on Ubuntu 13.04. From the terminal, start by
 installing OpenSSL. This is likely already installed, but installation
 instructions are added here for clarity.
 
-    sudo apt-get install openssl
+    sudo apt-get install openssl zip
 
 Now install pip and make sure its up to date.
 
