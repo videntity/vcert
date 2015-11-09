@@ -20,7 +20,7 @@ from django.db.models import Q
 @login_required
 def view_endpoint_details(request, serial_number):
     
-    e = get_object_or_404(DomainBoundCertificate, serial_number=serial_number,
+    e = get_object_or_404(EndpointCertificate, serial_number=serial_number,
                                trust_anchor__owner = request.user)
     
     response = HttpResponse(e.details, content_type='text/plain')
@@ -273,7 +273,7 @@ def revoke_trust_anchor_certificate(request, serial_number):
     name = _("Revoke a Trust Anchor Certificate & its Children")
     ta = get_object_or_404(TrustAnchorCertificate, serial_number=serial_number,
                                owner = request.user)
-        
+    name = _("Revoke a Trust Anchor %s Certificate & its Children" % (ta.common_name))    
     if request.method == 'POST':
         form = RevokeTrustAnchorCertificateForm(request.POST, instance = ta)
         if form.is_valid():
@@ -283,9 +283,9 @@ def revoke_trust_anchor_certificate(request, serial_number):
                 c.revoke = True
                 c.save()
             if m.status == "revoked":
-                messages.success(request, _("The Direct Trust Anchor certificate and all its children were revoked."))
+                messages.success(request, _("The Trust Anchor certificate and all its children were revoked."))
             else:
-                messages.success(request, _("The Direct Trust Anchor certificate was NOT revoked."))
+                messages.success(request, _("The Trust Anchor certificate and it children were NOT revoked."))
             
             return HttpResponseRedirect(reverse('home'))
         else:
@@ -307,10 +307,11 @@ def revoke_trust_anchor_certificate(request, serial_number):
 @login_required
 def revoke_endpoint_certificate(request, serial_number):
     
-    name = _("Revoke a Domain Bound Certificate")
+    
     dbc = get_object_or_404(EndpointCertificate, serial_number=serial_number,
                                trust_anchor__owner = request.user)
-        
+    
+    name = _("Revoke %s Certificate" % (dbs.common_name))    
     if request.method == 'POST':
         form = RevokeEndpointCertificateForm(request.POST, instance = dbc)
         if form.is_valid():
