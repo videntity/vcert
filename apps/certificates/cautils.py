@@ -126,11 +126,15 @@ def build_crl():
 
 
 def build_anchor_crl(trust_anchor):
+    
     url = ""
     config_file = "%s-crl-stub.cnf" % (trust_anchor.dns)
     crl_file = "%s.crl" % (trust_anchor.dns)
     crl_path = os.path.join(trust_anchor.completed_dir_path, crl_file)
     crl_conf = os.path.join(trust_anchor.completed_dir_path, config_file)
+    
+    print crl_conf
+    
     call(["openssl", "ca", "-config",  crl_conf,  "-gencrl", "-crlexts", "crl_ext", "-out", crl_path,])
     
     if "S3" in settings.CA_PUBLICATION_OPTIONS:
@@ -175,12 +179,18 @@ def revoke(cert):
     return output
 
 def revoke_from_anchor(cert):
-
+    print "revoke_from_anchor"
     fn = cert.serial_number + ".pem"
     fn = os.path.join(settings.CA_SIGNED_DIR, fn)
-    
-    config_file = "%s/%sdomain-bound-stub.cnf" % (cert.completed_dir_path,
-                                                  cert.dns,)
+    if hasattr(cert, 'trust_anchor'):
+        config_file = "%s/%s-crl-stub.cnf" % (cert.trust_anchor.completed_dir_path,
+                                          cert.trust_anchor.dns)
+    elif hasattr(cert,'parent'):
+        if cert.parent:
+            config_file = "%s/%s-crl-stub.cnf" % (cert.parent.completed_dir_path,
+                                          cert.parent.dns)
+        else:
+            revoke(cert)
 
     error, output = subprocess.Popen(["openssl", "ca", "-config", config_file,
                                       "-revoke" , fn],
@@ -188,6 +198,8 @@ def revoke_from_anchor(cert):
                                         stderr= subprocess.PIPE
                                         ).communicate()
     
+    print "revoke -------------------------------"
+    print error, output
     if os.path.exists(cert.completed_dir_path):
         rmtree(cert.completed_dir_path)
         # print "DELETED the path", cert.completed_dir_path
