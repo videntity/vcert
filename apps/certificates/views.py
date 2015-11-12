@@ -311,7 +311,7 @@ def revoke_endpoint_certificate(request, serial_number):
     dbc = get_object_or_404(EndpointCertificate, serial_number=serial_number,
                                trust_anchor__owner = request.user)
     
-    name = _("Revoke %s Certificate" % (dbs.common_name))    
+    name = _("Revoke %s Certificate" % (dbc.common_name))    
     if request.method == 'POST':
         form = RevokeEndpointCertificateForm(request.POST, instance = dbc)
         if form.is_valid():
