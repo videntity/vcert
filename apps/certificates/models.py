@@ -607,7 +607,10 @@ class TrustAnchorCertificate(MPTTModel):
                                                             )
                 
                 #revoke the cert
-                revoke(self)
+                if not self.parent:
+                    revoke(self)
+                else:
+                    revoke_from_anchor(self)
                 
             
         super(TrustAnchorCertificate, self).save(**kwargs)

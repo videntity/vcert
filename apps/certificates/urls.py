@@ -18,6 +18,9 @@ urlpatterns = patterns('',
     url(r'create-endpoint/(?P<serial_number>\S+)', create_endpoint_certificate,
                        name="create_endpoint_certificate"),
 
+    url(r'create-crl/(?P<serial_number>\S+)', create_anchor_crl,
+                       name="create_anchor_crl"),
+
     
     url(r'revoke-endpoint/(?P<serial_number>\S+)', revoke_endpoint_certificate,
                         name="revoke_endpoint_certificate"),

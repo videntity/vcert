@@ -132,6 +132,12 @@
 									href="/certificates/revoke-trust-anchor/{{a.serial_number}}">
 								  <i class="fa fa-warning"></i> 
 								  Revoke Self & Children</a>
+								 
+								 <a class="btn btn-primary btn-small btn-block"
+									href="/certificates/create-crl/{{a.serial_number}}">
+								  <i class="fa fa-certificate"></i> 
+								  Generate CRL</a>
+								 
 							  </td>
 							  
 								 {% else %}
@@ -140,7 +146,7 @@
 								   <td>
 									 {% if user.is_staff %}
 										   <a class="btn btn-warning btn-small btn-block"
-										 href="/certificates/verify-trust-anchor/{{a.serial_number}}">
+										 href="/certificates/verify-anchor/{{a.serial_number}}">
 									  <i class="fa fa-check"></i>
 									  Self-Verify</a>
 									{% else %}

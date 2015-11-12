@@ -9,7 +9,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.models import User
 from ..accounts.models import UserProfile
 from django.utils.translation import ugettext_lazy as _
-from models import EndpointCertificate, TrustAnchorCertificate
+from models import EndpointCertificate, TrustAnchorCertificate, AnchorCertificateRevocationList
 from forms import (TrustAnchorCertificateForm, EndpointCertificateForm,
             RevokeEndpointCertificateForm, RevokeTrustAnchorCertificateForm,
             VerifyEndpointCertificateForm, VerifyTrustAnchorCertificateForm)
@@ -25,6 +25,23 @@ def view_endpoint_details(request, serial_number):
     
     response = HttpResponse(e.details, content_type='text/plain')
     return response
+
+
+@login_required
+def create_anchor_crl(request, serial_number):
+    
+    a = get_object_or_404(TrustAnchorCertificate, serial_number=serial_number,
+                               owner = request.user)
+    
+    
+    crl, created = AnchorCertificateRevocationList.objects.get_or_create(trust_anchor = a)
+    crl.save()
+    msg = "The CRL was (re)created at %s." % (crl.url)
+    messages.success(request, _(msg))
+   
+    return HttpResponseRedirect(reverse('home'))
+    
+
 
 
 @login_required
@@ -141,13 +158,13 @@ def view_anchor(request, serial_number):
     revoked_anchors = descendant_revoked_anchors
     
     
-    active_endpoints = EndpointCertificate.objects.filter(~Q(trust_anchor__parent = None),
-                                                             status="good"
-                                                             ) | \
-                       EndpointCertificate.objects.filter(~Q(trust_anchor__parent = None),
-                                                             status="unverified"
-                                                             )| \
-                       EndpointCertificate.objects.filter(trust_anchor = anchor,
+    # active_endpoints = EndpointCertificate.objects.filter(~Q(trust_anchor__parent = None),
+    #                                                          status="good"
+    #                                                          ) | \
+    #                    EndpointCertificate.objects.filter(~Q(trust_anchor__parent = None),
+    #                                                          status="unverified"
+    #                                                          )| \
+    active_endpoints =  EndpointCertificate.objects.filter(trust_anchor = anchor,
                                                              status="good"
                                                              )| \
                        EndpointCertificate.objects.filter(trust_anchor = anchor,
@@ -270,18 +287,21 @@ def create_trust_anchor_certificate(request):
 
 @login_required
 def revoke_trust_anchor_certificate(request, serial_number):
-    name = _("Revoke a Trust Anchor Certificate & its Children")
     ta = get_object_or_404(TrustAnchorCertificate, serial_number=serial_number,
                                owner = request.user)
     name = _("Revoke a Trust Anchor %s Certificate & its Children" % (ta.common_name))    
     if request.method == 'POST':
         form = RevokeTrustAnchorCertificateForm(request.POST, instance = ta)
         if form.is_valid():
-            m = form.save()
+            m = form.save(commit = False)
+            
             children = EndpointCertificate.objects.filter(trust_anchor = ta)
             for c in children:
                 c.revoke = True
                 c.save()
+            m.revoke=True
+            m.save()
+            
             if m.status == "revoked":
                 messages.success(request, _("The Trust Anchor certificate and all its children were revoked."))
             else:
