@@ -8,6 +8,8 @@ from views import *
 urlpatterns = patterns('',
    
 
+    url(r'revoked', all_revoked,  name="all_revoked"),
+
     url(r'create-trust-anchor/', create_trust_anchor_certificate,
                        name="create_trust_anchor_certificate"),
 
@@ -21,6 +23,10 @@ urlpatterns = patterns('',
     url(r'create-crl/(?P<serial_number>\S+)', create_anchor_crl,
                        name="create_anchor_crl"),
 
+    url(r'create-root-crl', create_root_crl,
+                       name="create_root_crl"),
+    
+    
     
     url(r'revoke-endpoint/(?P<serial_number>\S+)', revoke_endpoint_certificate,
                         name="revoke_endpoint_certificate"),
