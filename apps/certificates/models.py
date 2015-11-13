@@ -1198,7 +1198,7 @@ class EndpointCertificate(models.Model):
 
 
 class CertificateRevocationList(models.Model):
-    
+    #For the ROOT's CRL - only one field.
     url                 = models.CharField(max_length=1024, default="", blank=True)
     local_path          = models.CharField(max_length=1024, default="", blank=True)
     creation_datetime   = models.DateTimeField(auto_now_add=True)

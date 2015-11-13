@@ -9,7 +9,8 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.models import User
 from ..accounts.models import UserProfile
 from django.utils.translation import ugettext_lazy as _
-from models import EndpointCertificate, TrustAnchorCertificate, AnchorCertificateRevocationList
+from models import (EndpointCertificate, TrustAnchorCertificate,
+                    AnchorCertificateRevocationList, CertificateRevocationList)
 from forms import (TrustAnchorCertificateForm, EndpointCertificateForm,
             RevokeEndpointCertificateForm, RevokeTrustAnchorCertificateForm,
             VerifyEndpointCertificateForm, VerifyTrustAnchorCertificateForm)
@@ -32,8 +33,6 @@ def create_anchor_crl(request, serial_number):
     
     a = get_object_or_404(TrustAnchorCertificate, serial_number=serial_number,
                                owner = request.user)
-    
-    
     crl, created = AnchorCertificateRevocationList.objects.get_or_create(trust_anchor = a)
     crl.save()
     msg = "The CRL was (re)created at %s." % (crl.url)
@@ -41,7 +40,15 @@ def create_anchor_crl(request, serial_number):
    
     return HttpResponseRedirect(reverse('home'))
     
-
+@login_required
+def create_root_crl(request):
+    
+    c = CertificateRevocationList.objects.all().delete()
+    crl, created = CertificateRevocationList.objects.get_or_create()
+    crl.save()
+    msg = "The root CRL was (re)created at %s." % (crl.url)
+    messages.success(request, _(msg))
+    return HttpResponseRedirect(reverse('home'))
 
 
 @login_required
@@ -124,7 +131,7 @@ def certificate_dashboard(request):
 
 @login_required
 def view_anchor(request, serial_number):
-    #get all active trust anchors decendants and associated domain-bound certs
+    #get all active trust anchors descendants and associated domain-bound certs
     anchor = get_object_or_404(TrustAnchorCertificate, serial_number=serial_number,
                                owner = request.user)
 
@@ -252,7 +259,7 @@ def create_trust_anchor_certificate(request):
             if ta.status == "unverified":
                 messages.success(request, _("Your trust anchor creation request completed successfully. A human must verify this information before you can create endpoint certificates. An email will be sent when this process is complete."))
             elif ta.status == "failed":
-                messages.error(request, _("Oops.  Something has gone wrong.  Your trust anchor certifcate creation request failed. Please contact customer support."))
+                messages.error(request, _("Oops.  Something has gone wrong.  Your trust anchor certificate creation request failed. Please contact customer support."))
         
             return HttpResponseRedirect(reverse('home'))
         else:
@@ -359,6 +366,27 @@ def revoke_endpoint_certificate(request, serial_number):
                               RequestContext(request, context,))
 
 
+
+
+@login_required
+@staff_member_required
+def all_revoked(request):
+    revoked = []
+    anchors   = TrustAnchorCertificate.objects.filter(status="revoked")
+    endpoints = EndpointCertificate.objects.filter(status="revoked")
+    for a in anchors:
+        revoked.append(a)
+    for e in endpoints:
+        revoked.append(e)
+    
+    
+    return render_to_response('revoked.html', {'revoked': revoked},
+                                            RequestContext(request))
+            
+    
+    
+    
+    
 
 
 @login_required

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% load i18n %}
+
+    
+  
+<div class="container">
+	  <div class="row">
+			<div class="col-lg-12">	
+			  <h2>{% trans "Revoked Headstones" %}</h2>
+		    </div>	
+	  </div>
+</div>
+
+
+
+<div class="container">
+      <div class="row">
+			<div class="col-lg-10">
+				  <table class="table">
+						<thead>
+							  <tr>
+									<th>Email/DNS</th>
+									<th>Category</th>
+									<th>Status</th>
+									<th>SHA1 Fingerprint</th>
+									<th>Serial Number</th>
+									<th>Created</th>
+									<th>Expires</th>
+							  </tr>
+						</thead>
+						 
+						<tbody>
+						  
+						{% for c in revoked %}
+						   
+						<tr class="danger">
+							  <td>{{ c.email }}</td>
+							  <td>{{ c.category }}</td>
+							  <td><a   href="{{c.public_cert_status_url}}">{{ c.status }}</a> |
+							  <a  href="{{c.public_cert_status_sha1_url}}">
+							  sha1-digest</a>
+							  
+							  </td>
+							  <td>{{ c.sha1_fingerprint|slice:":30"}} <br>
+								  {{c.sha1_fingerprint|slice:"30:"}}</td>
+							  <td>{{ c.serial_number }}</td>
+							  <td>{{ c.creation_date }}</td>
+							  <td>{{ c.expiration_date }}</td>
+						</tr>
+						
+						{% endfor %}
+						</tbody>
+				  </table>
+			</div>
+	  </div>
+</div>
+
+
+  
+
+
+{% endblock %}
