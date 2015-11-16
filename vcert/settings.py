@@ -159,6 +159,7 @@ INSTALLED_APPS = (
     'apps.certificates',
     'apps.home',
     #3rd party
+    'direct',
     'django_extensions',
     'bootstrapform',
     'mptt',
