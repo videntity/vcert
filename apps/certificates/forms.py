@@ -120,7 +120,7 @@ class DiscoverPublicForm(Form):
     def save(self, commit=True):
         
         endpoint = self.cleaned_data.get('endpoint', "")
-        dc = DCert(endpoint=endpoint, save_to_disk=False)
+        dc = DCert(endpoint=endpoint, expected_bound_entity=endpoint, save_to_disk=False)
         results = dc.validate_certificate()
         return results
         
