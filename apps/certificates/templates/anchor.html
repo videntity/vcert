@@ -114,7 +114,7 @@
 							   
 							  <strong>CRL:</strong> <a href = "{{a.crl_url}}">crl</a> (der)<br>
 							  <strong>AIA:</strong> <a href="{{a.aia_url}}">der</a><br>
-							   
+							   <strong>Discover:</strong> <a href="/direct/validate/{{a.common_name}}">json </a> | <a href="/certificates/validate/{{a.common_name}}">html</a><br>
 							   
 							  </td>
 							  
@@ -135,8 +135,10 @@
 								 
 								 <a class="btn btn-primary btn-small btn-block"
 									href="/certificates/create-crl/{{a.serial_number}}">
-								  <i class="fa fa-certificate"></i> 
-								  Generate CRL</a>
+								  <i class="fa fa-refresh"></i> 
+								  (Re)Generate CRL</a>
+								 
+								 
 								 
 							  </td>
 							  
@@ -268,7 +270,7 @@
 <div class="container">
 	  <div class="row">
 			<div class="col-lg-12">	
-			  <h2>{% trans "Revoked Descendant Anchors and Endpoints" %}</h2>
+			  <h2>{% trans "Revoked Anchors and Endpoints" %}</h2>
 		    </div>	
 	  </div>
 </div>

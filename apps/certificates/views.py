@@ -1,4 +1,5 @@
 from django.conf import settings
+import json
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib import messages
@@ -13,9 +14,140 @@ from models import (EndpointCertificate, TrustAnchorCertificate,
                     AnchorCertificateRevocationList, CertificateRevocationList)
 from forms import (TrustAnchorCertificateForm, EndpointCertificateForm,
             RevokeEndpointCertificateForm, RevokeTrustAnchorCertificateForm,
-            VerifyEndpointCertificateForm, VerifyTrustAnchorCertificateForm)
+            VerifyEndpointCertificateForm, VerifyTrustAnchorCertificateForm,
+            DiscoverPEMForm, DiscoverPublicForm)
 from mptt.utils import drilldown_tree_for_node, previous_current_next
 from django.db.models import Q
+from utils import get_cert_highlights
+
+
+
+
+def  walk_chain_with_pem(request):
+    name = "Walk the Certificate Chain from a PEM x509 Certificate" 
+    if request.method == 'POST':
+        form = DiscoverPEMForm(request.POST)
+        if form.is_valid():
+            c = form.save()
+            output_format = form.cleaned_data.get('output_format', "html")
+            if output_format == "json":
+               return HttpResponse(json.dumps(c, indent=4),
+                                 content_type="application/json")
+            #else its HTML
+            highlights = get_cert_highlights(c)
+            summary = highlights['Summary']
+            details = highlights['Details']
+            del highlights['Summary']
+            del highlights['Details']
+            
+            for d in details:
+                messages.warning(request, _(d))
+            if not details:
+                messages.success(request, _("Certificate looks good!"))
+            return render_to_response('discovery.html',
+                                      {'name': name,
+                                       'highlights': [highlights, ],
+                                       'summary': summary},
+                                            RequestContext(request))
+        else:
+            #The form is invalid
+             return render_to_response('generic/bootstrapform.html',
+                                            {'form': form,
+                                             'name': name},
+                                            RequestContext(request))
+   #this is a GET
+    context= {'name':name, 'form': DiscoverPEMForm() }
+    return render_to_response('generic/bootstrapform.html',
+                              RequestContext(request, context,))
+
+
+def  walk_chain_with_discovery(request):
+    number_of_certs =0
+    certs =[]
+    is_good = False
+    is_unsure = False
+    summary="Bad"
+    name = "Walk the Certificate Chain from DNS and/or LDAP" 
+    if request.method == 'POST':
+        form = DiscoverPublicForm(request.POST)
+        if form.is_valid():
+            c = form.save()
+            output_format = form.cleaned_data.get('output_format', "html")
+            if output_format == "json":
+               return HttpResponse(json.dumps(c, indent=4),
+                                 content_type="application/json")
+            #else its HTML
+            if not c['is_found']:
+                messages.error(request, _("The certificate was not found in LDAP or DNS."))
+                return render_to_response('discovery.html',
+                                      {'name': name},
+                                            RequestContext(request))
+            if  c['dns']['status'] == 200:
+                
+                for i in c['dns']['cert_details']:
+                    number_of_certs += 1
+                    highlights = get_cert_highlights(i)
+                    certs.append(highlights)
+                    for d in highlights['Details']:
+                        messages.warning(request, _(d))
+                    if highlights['Summary'] == "Good":
+                        is_good = True
+                    if highlights['Summary'] == "Unsure":
+                        is_unsure = True
+            
+            if  c['ldap']['status'] == 200:
+
+                
+                for i in c['ldap']['cert_details']:
+                    number_of_certs += 1
+                    highlights = get_cert_highlights(i)
+                    certs.append(highlights)
+                    for d in highlights['Details']:
+                        messages.warning(request, _(d))
+                    if highlights['Summary'] == "Good":
+                        is_good = True
+                    if highlights['Summary'] == "Unsure":
+                        is_unsure = True
+            
+            if number_of_certs>1:
+                messages.info(request, _("More than one certificate was discovered."))
+            
+            
+            if is_unsure and not is_good:
+                summary = "Unsure"
+            if is_good:
+                summary="Good"
+            
+            return render_to_response('discovery.html',
+                                      {'highlights': certs,
+                                      'summary': summary
+                                      },
+                                            RequestContext(request))
+            
+            
+            
+            
+            
+            
+            return HttpResponse(json.dumps(c, indent=4),
+                         content_type="application/json")
+        
+        
+        
+        
+        
+        else:
+            #The form is invalid
+             return render_to_response('generic/bootstrapform.html',
+                                            {'form': form,
+                                             'name': name},
+                                            RequestContext(request))
+   #this is a GET
+    context= {'name':name, 'form': DiscoverPublicForm() }
+    return render_to_response('generic/bootstrapform.html',
+                              RequestContext(request, context,))
+
+
 
 
 @login_required

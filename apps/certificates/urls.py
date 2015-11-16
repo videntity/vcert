@@ -3,11 +3,15 @@
 
 from django.conf.urls import patterns, include, url
 from views import *
-
+from  django.views.generic.base import TemplateView
 
 urlpatterns = patterns('',
    
 
+    url(r'chains', TemplateView.as_view(template_name='discovery-splash.html'), name="chains"),
+    url(r'walk-chain-pem', walk_chain_with_pem,  name=" walk_chain_with_pem"),
+    url(r'walk-chain-discovery', walk_chain_with_discovery,  name=" walk_chain_with__discovery"),
+    
     url(r'revoked', all_revoked,  name="all_revoked"),
 
     url(r'create-trust-anchor/', create_trust_anchor_certificate,

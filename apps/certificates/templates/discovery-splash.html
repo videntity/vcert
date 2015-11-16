@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% load i18n %}
+
+    
+  
+<div class="container">
+	  <div class="row">
+			<div class="col-lg-12">	
+			  <h1>{% trans "Chain and Certificate Discovery Tools" %}</h1>
+		    </div>	
+	  </div>
+</div>
+
+
+
+<div class="container">
+      
+	  
+	  
+	        <div class="row">
+			<div class="col-lg-6">
+				
+				 <a class="btn btn-primary btn-large btn-block" href="/certificates/walk-chain-pem"
+                  data-toggle="tooltip" title="Walk Chain with PEM Certificate">
+                    <i class="fa fa-certificate"></i> {% trans "Walk Chain with Certificate" %}
+                        </a>    
+				
+			</div>
+	  </div>
+	
+	  <div class="row">
+			<div class="col-lg-6">
+				 <a class="btn btn-primary btn-large btn-block " href="/certificates/walk-chain-discovery"
+                  data-toggle="tooltip" title="Walk Chain with by DNS LDAP Discovert">
+                    <i class="fa fa-cloud-download"></i> {% trans "Walk Chain with DNS/LDAP Discovery" %}
+                        </a>    
+			</div>
+	  </div>
+	  </div>
+	
+<div class="container">			
+			
+	  <div class="row">
+			<div class="col-lg-6">
+				<br><br>
+				<div class="text-center"> 
+				
+				 <a class="btn btn-primary btn-large" href="javascript:history.go(-1)"
+                  data-toggle="tooltip" title="Back to Form">
+                    <i class="fa fa-arrow-left"></i> {% trans "Back to Form" %}
+                        </a>    
+				</div>
+				
+			</div>
+	  </div>
+	  
+
+</div>
+
+
+  
+
+
+{% endblock %}
