@@ -25,7 +25,8 @@ class TrustAnchorCertificateForm(ModelForm):
     required_css_class = 'required'
     
     def clean_email(self):
-        email = self.cleaned_data.get('email', "")
+        email = self.cleaned_data.get('email', "").strip()
+        
         anchors = TrustAnchorCertificate.objects.filter(email=email, status="good").count()
         endpoints = EndpointCertificate.objects.filter(email=email, status="good").count()
         
@@ -34,7 +35,7 @@ class TrustAnchorCertificateForm(ModelForm):
         return email
     
     def clean_dns(self):
-        dns = self.cleaned_data.get('dns', "")
+        dns = self.cleaned_data.get('dns', "").strip()
         anchors = TrustAnchorCertificate.objects.filter(dns=dns, status="good").count()
         endpoints = EndpointCertificate.objects.filter(dns=dns, status="good").count()
         
@@ -69,7 +70,7 @@ class EndpointCertificateForm(ModelForm):
     required_css_class = 'required'
     
     def clean_email(self):
-        email = self.cleaned_data.get('email', "")
+        email = self.cleaned_data.get('email', "").strip()
         anchors = TrustAnchorCertificate.objects.filter(email=email, status="good").count()
         endpoints = EndpointCertificate.objects.filter(email=email, status="good").count()
         
@@ -78,7 +79,7 @@ class EndpointCertificateForm(ModelForm):
         return email
     
     def clean_dns(self):
-        dns = self.cleaned_data.get('dns', "")
+        dns = self.cleaned_data.get('dns', "").strip()
         anchors = TrustAnchorCertificate.objects.filter(dns=dns, status="good").count()
         endpoints = EndpointCertificate.objects.filter(dns=dns, status="good").count()
         

@@ -99,8 +99,12 @@ def build_crl():
     print "CRL_FILE", crl_file
     
     
-    call(["openssl", "ca", "-config",  settings.CA_MAIN_CONF ,  "-crlexts", "crl_ext", "-gencrl", "-out",
+    call(["openssl", "ca", "-config",  settings.CA_MAIN_CONF ,
+          "-crlexts", "crl_ext", "-gencrl", "-out",
           crl_file, "-passin", password])
+    
+    call(["openssl", "crl", "-in", crl_file, '-out',crl_file, '-outform', 'DER' ])
+    
     
     if "S3" in settings.CA_PUBLICATION_OPTIONS:
         s=SimpleS3()
@@ -135,7 +139,11 @@ def build_anchor_crl(trust_anchor):
     
     print crl_conf
     
-    call(["openssl", "ca", "-config",  crl_conf,  "-gencrl", "-crlexts", "crl_ext", "-out", crl_path,])
+    call(["openssl", "ca", "-config",  crl_conf,  "-gencrl",
+          "-crlexts", "crl_ext","-out", crl_path,])
+    
+    call(["openssl", "crl", "-in", crl_path, '-out',crl_path, '-outform', 'DER' ])
+    
     
     if "S3" in settings.CA_PUBLICATION_OPTIONS:
         s=SimpleS3()

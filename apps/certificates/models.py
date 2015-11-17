@@ -185,6 +185,17 @@ class TrustAnchorCertificate(MPTTModel):
         return self.common_name   
     
     
+    def clean(self):
+        """Remove leading\trailing whitespace and strip out non-ascii characters"""
+        for field in self._meta.fields:
+            if field and isinstance(field, (models.CharField, models.TextField)):
+                try:
+                    setattr(self, field.name, getattr(self, field.name).strip())
+                    setattr(self, field.name, getattr(self, field.name).encode("ascii", errors="ignore"))
+                except AttributeError:
+                    pass
+    
+    
         
     def save(self, **kwargs):
              
@@ -764,7 +775,19 @@ class EndpointCertificate(models.Model):
             return True
         return False
 
-        
+    def clean(self):
+        """Remove leading\trailing whitespace and strip out non-ascii characters"""
+        for field in self._meta.fields:
+            if field and isinstance(field, (models.CharField, models.TextField)):
+                try:
+                    setattr(self, field.name, getattr(self, field.name).strip())
+                    setattr(self, field.name, getattr(self, field.name).encode("ascii", errors="ignore"))
+                except AttributeError:
+                    pass
+
+
+
+    
     def save(self, **kwargs):
         if not self.sha256_digest and self.status=="incomplete":
             #"We've only just begun...I'm new."
