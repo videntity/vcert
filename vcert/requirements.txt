@@ -3,8 +3,9 @@ django-ses
 markdown
 Django==1.8.6
 django-extensions
-twilio
 django-bootstrap-form
 pyOpenSSL
 django-localflavor
 django-mptt
+django-widget-tweaks
+django-direct

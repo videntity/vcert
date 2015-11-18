@@ -160,6 +160,7 @@ INSTALLED_APPS = (
     'apps.home',
     #3rd party
     'direct',
+    'widget_tweaks',
     'django_extensions',
     'bootstrapform',
     'mptt',
