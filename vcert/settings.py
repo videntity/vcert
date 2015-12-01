@@ -240,7 +240,7 @@ CA_PUBLICATION_OPTIONS = ("LOCAL", "S3") #Valid options are "LOCAL" and "S3".
 
 ACCOUNT_REQUEST_TEXT = "Contact example@example.com for a code."
 
-# Not reccomended to adjust this part
+# Not recommended to adjust this part
 
 #CA Directory structure -------------------------------------------
 CA_BASE_DIR              = "/opt/ca/"
@@ -273,7 +273,7 @@ LOCAL_X5C_PATH           = os.path.join(BASE_DIR, 'sitestatic', 'x5c')
 
 
 #URLS for certs. aia, crl, etc.-----------------------------------------------
-
+CRL_FILENAME               = os.path.join(CA_COMMON_NAME , ".crl")
 CRL_URL_PREFIX              = '%s%s/'    % (CA_URL, "crl")
 CA_ROOT_CRL_URL             = '%s%s.crl' % (CRL_URL_PREFIX, CA_COMMON_NAME)
 CA_ROOT_AIA_URL             = '%s%s.der' % (CRL_URL_PREFIX, CA_COMMON_NAME)
