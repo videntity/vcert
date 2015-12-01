@@ -308,6 +308,7 @@ TEMPLATE_CONTEXT_PROCESSORS = global_settings.TEMPLATE_CONTEXT_PROCESSORS + \
                  'apps.context_processors.ca_url',
                  )
 
+PRIVATE_PASSWORD = "changem3"
 
 # To enable you local settings create or copy the example
 # file found in ./config/settings_[EXAMPLE].py to the same
