@@ -231,7 +231,7 @@ CA_COMMON_NAME = "ca.example.com"
 LOCATION_NAME = "Anywhere, USA"
 GLOBAL_TITLE = "caconsole.example.com"
 CA_VERIFIER_EMAIL = "verifier@example.com"
-CA_HOSTNAME = "localhost:8000/static"
+CA_HOSTNAME = "/static"
 CA_URL = 'http://%s/' % (CA_HOSTNAME)
 
 
