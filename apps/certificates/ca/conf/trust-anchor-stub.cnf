@@ -1,6 +1,6 @@
 [ req ]
 default_bits            = 4096
-default_keyfile         = /opt/ca/private/ca.directca.orgKey.pem
+default_keyfile         = /opt/ca/private/ca.example.comKey.pem
 default_md              = sha256
 prompt                  = no
 distinguished_name      = sub_ca_distinguished_name
@@ -19,7 +19,7 @@ subjectKeyIdentifier    = hash
 authorityKeyIdentifier  = keyid:always,issuer:always
 basicConstraints        = CA:true
 keyUsage                = keyCertSign, cRLSign
-crlDistributionPoints   = URI:http://ca.directca.org/crl/ca.directca.org.crl
+crlDistributionPoints   = URI:http://ca.example.com/crl/ca.example.com.crl
 
 [ ca ]
 default_ca              = CA_default
@@ -28,9 +28,9 @@ default_ca              = CA_default
 dir                     = .
 new_certs_dir           = /opt/ca/signed-keys/
 database                = /opt/ca/conf/index
-certificate             = /opt/ca/public/ca.directca.org.pem
+certificate             = /opt/ca/public/ca.example.com.pem
 serial                  = /opt/ca/conf/serial
-private_key             = /opt/ca/private/ca.directca.orgKey.pem
+private_key             = /opt/ca/private/ca.example.comKey.pem
 x509_extensions         = usr_cert
 name_opt                = ca_default
 cert_opt                = ca_default
