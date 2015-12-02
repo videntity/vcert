@@ -1,16 +1,18 @@
 README
 ======
 
-`vcert`  A web-based certificate authority mangement system built atop OpenSSL.
+`vcert`  A web-based certificate authority management system built atop Django and OpenSSL.
 
 Open Source License: GPL v2
 
-Copyright Alan Viars 2013-2015
-
+Copyright Videntity  2013-2015
 
 
 About
 -----
+
+This document describes a developer install. For a quicker start check out INSTALL.md instructions.
+
 
 `vcert` is a web-based (Django) Certificate Authority (or CA) that uses OpenSSL
 under the hood.  The site DirectCA.org runs vcert. It was built specifically to
@@ -125,13 +127,13 @@ on what the various settings do.
 Installlation Part 3 - OpenSSL CA Configuration
 -----------------------------------------------
 
-There are stil a few of items that need to be addressed:
+There are still a few of items that need to be addressed:
 
 Most notably you need to do the following:
 
 Create and/or install the root CA's (or subordinate certificate's) private
 certificate and change settings_local.py accordingly.  Here is how to generate a
-new CA keypair with a password on the pricate key.  It assumes the domain
+new CA keypair with a password on the private key.  It assumes the domain
 `ca.example.com` and uses the configuration file
 `/opt/ca/conf/ca.example.com.cnf`. Before this next step,  You will likely want
 to make adjustment there such the changing "example.com" to your domain, setting
@@ -139,7 +141,8 @@ organizational name, city, state, and so on.  Here are the steps:
 
 
     cd /opt/ca
-    openssl req -nodes -config conf/ca.example.com.cnf -days 7330 -x509 -newkey rsa:4096 -out public/ca.example.com.pem -outform PEM
+    openssl genrsa -out private/ca.example.comKey.pem 2048
+    openssl req -sha256 -new -x509 -days 1826 -key private/ca.example.comKey.pem -out public/ca.example.com.pem
     openssl rsa -des3 -in ./private/ca.example.comKey.pem -out ./private/ca.example.comKey.pem
 
 You will end up with the CA's public key in `/opt/ca/public` and the private key

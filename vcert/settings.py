@@ -234,9 +234,8 @@ CA_VERIFIER_EMAIL = "verifier@example.com"
 CA_HOSTNAME = "localhost:8000/static"
 CA_URL = 'http://%s/' % (CA_HOSTNAME)
 
-
-
-CA_PUBLICATION_OPTIONS = ("LOCAL", "S3") #Valid options are "LOCAL" and "S3".
+#Valid options are "LOCAL" only. S3" is not supported at this time.
+CA_PUBLICATION_OPTIONS = ("LOCAL", ) #
 
 ACCOUNT_REQUEST_TEXT = "Contact example@example.com for a code."
 

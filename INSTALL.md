@@ -1,20 +1,20 @@
-Custom/Local  Install Instructions for Direct Certificate Authority and Test Tool.
-==========================
+Custom and Local Install Instructions for Direct Certificate Authority and Test Tool
+====================================================================================
 
 This document outlines installing the software in Amazon web Service (AWS) Elastic Cloud Computing (EC2), but the information contained here is also mostly applicable to local installs. You won't need this if following these instructions, but he source code for this application can be found here. https://github.com/videntity/vcert.
 
-This Amazon Machine Image (AMI) is a pre-built image that will lanch the Direct CA Console and the CA in AWS EC2. 
+This Amazon Machine Image (AMI) is a pre-built image that will lanch the Direct CA Console and the CA in AWS EC2.
 
 It was created to streamline the setup of a separate personal installation and provide a full working example for those seeking to setup a local deployment.
 
-The AMI is `ami-f532709f`.
+The AMI is `ami-226f2248`.
 
-You can use this URL to kick things off. 
+You can use this URL to kick things off.
 
-https://console.aws.amazon.com/ec2/v2/home?region=us-east-1#LaunchInstanceWizard:ami=ami-f532709f
+https://console.aws.amazon.com/ec2/v2/home?region=us-east-1#LaunchInstanceWizard:ami=ami-226f2248
 
 
-A micro-instace is suitble for  a low traffic installation.
+A micro-instance is suitble for a low traffic installation.
 
 Overview of Stack Components
 -----------------------------
@@ -29,9 +29,9 @@ Overview of Stack Components
 
 
 
-After your instance is lanched EC2 will assign a hostname and IP.
+After your instance is lanched,  EC2 will assign a hostname and IP.
 
-After the instance is launched point your browser to
+After the instance is fully launched, point your browser to
 
 http://youhost.amazonaws.com replacing yourhost with your actual running instance's host name. You won't be able to see the console until DNS is configured.  See the first step below.
 
@@ -132,7 +132,7 @@ To create your own root CA pair's do the following:
     openssl rsa -des3 -in ./private/ca.example.comKey.pem -out ./private/ca.example.comKey.pem
 
 
-You'll need to redefine dwefault settings  create/edit your settings_local.py file. See the file `/home/ubuntu/django-projects/vcert/vcert/settings_local_example.py` for details.  Be sure and restart Apache after making changes here with the following command.
+You'll need to redefine default settings by createing/ editing your settings_local.py file. See the file `/home/ubuntu/django-projects/vcert/vcert/settings_local_example.py` for details.  Be sure and restart Apache after making changes here with the following command.
 
 
     sudo apachectl restart
