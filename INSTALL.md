@@ -1,7 +1,7 @@
 Custom and Local Install Instructions for Direct Certificate Authority and Test Tool
 ====================================================================================
 
-This document outlines installing the software in Amazon web Service (AWS) Elastic Cloud Computing (EC2), but the information contained here is also mostly applicable to local installs. You won't need this if following these instructions, but he source code for this application can be found here. https://github.com/videntity/vcert.
+This document outlines installing the software in Amazon web Service (AWS) Elastic Cloud Computing (EC2), but the information contained here is also mostly applicable to local installs. You won't need this if following these instructions, but the source code for this application can be found here. https://github.com/videntity/vcert.
 
 This Amazon Machine Image (AMI) is a pre-built image that will lanch the Direct CA Console and the CA in AWS EC2.
 
