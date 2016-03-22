@@ -50,10 +50,10 @@ commonName              = supplied
 emailAddress            = supplied
 
 [ usr_cert ]
-basicConstraints        = CA:true
+basicConstraints        = critical,CA:true
 subjectKeyIdentifier    = hash
 authorityKeyIdentifier  = keyid ,issuer:always
-keyUsage                = digitalSignature, keyCertSign, cRLSign
+keyUsage                = digitalSignature, keyEncipherment,keyCertSign, cRLSign
 crlDistributionPoints   = URI:|CRL_URL|            #.der
 authorityInfoAccess     = caIssuers;URI:|AIA_URL|  #.der
 
