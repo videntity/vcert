@@ -7,11 +7,11 @@ This Amazon Machine Image (AMI) is a pre-built image that will lanch the Direct 
 
 It was created to streamline the setup of a separate personal installation and provide a full working example for those seeking to setup a local deployment.
 
-The AMI is `ami-226f2248`.
+The AMI is `ami-640b070e`.
 
 You can use this URL to kick things off.
 
-https://console.aws.amazon.com/ec2/v2/home?region=us-east-1#LaunchInstanceWizard:ami=ami-226f2248
+https://console.aws.amazon.com/ec2/v2/home?region=us-east-1#LaunchInstanceWizard:ami=ami-640b070e
 
 
 A micro-instance is suitble for a low traffic installation.
