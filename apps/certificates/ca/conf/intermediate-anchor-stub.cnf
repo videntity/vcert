@@ -61,9 +61,10 @@ emailAddress            = supplied
 subjectAltName          = DNS: |DNS|
 subjectKeyIdentifier    = hash
 authorityKeyIdentifier  = keyid:always #, issuer:always
-keyUsage                = digitalSignature, keyEncipherment
+keyUsage                = digitalSignature, keyEncipherment, keyCertSign, cRLSign
 crlDistributionPoints   = URI:|CRL_URL|            #.der
 authorityInfoAccess     = caIssuers;URI:|AIA_URL|  #.der
+basicConstraints        = critical,CA:true
 
 
 
