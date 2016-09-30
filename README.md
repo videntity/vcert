@@ -1,11 +1,12 @@
 README
 ======
 
-`vcert`  A web-based certificate authority management system built atop Django and OpenSSL.
+`vcert`  A web-based certificate authority management system built atop 
+Django 1.8.5  and OpenSSL.
 
 Open Source License: GPL v2
 
-Copyright Videntity  2013-2015
+Copyright Videntity  2013-201
 
 
 About
