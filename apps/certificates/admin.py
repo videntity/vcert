@@ -13,8 +13,9 @@ class TreeViewAnchorCertificate(TrustAnchorCertificate):
 
 class EndpointCertificateAdmin(admin.ModelAdmin):
     
-    list_display = ('common_name', 'verified','serial_number',
-                    'organization', 'creation_date', 'expiration_date')
+    list_display = ('common_name', 'trust_anchor','status','verified',
+                    'serial_number', 'organization', 'creation_date', 
+                    'expiration_date')
     
     search_fields = ('common_name','status', 'verified','serial_number',
                      'organization', 'creation_date', 'expiration_date')
@@ -62,8 +63,11 @@ admin.site.register(CertificateRevocationList, CertificateRevocationListAdmin)
 
 class AnchorCertificateRevocationListAdmin(admin.ModelAdmin):
     
-    list_display = ('trust_anchor','url', 'local_path', 'creation_date', 'creation_datetime')
+    list_display = ('trust_anchor','url', 'local_path', 'creation_date', 
+                    'creation_datetime')
     
-    search_fields =('trust_anchor','url', 'local_path', 'creation_date', 'creation_datetime')
+    search_fields =('trust_anchor','url', 'local_path', 'creation_date', 
+                    'creation_datetime')
     
 admin.site.register(AnchorCertificateRevocationList, AnchorCertificateRevocationListAdmin)
+
