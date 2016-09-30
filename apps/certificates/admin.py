@@ -13,7 +13,7 @@ class TreeViewAnchorCertificate(TrustAnchorCertificate):
 
 class EndpointCertificateAdmin(admin.ModelAdmin):
     
-    list_display = ('common_name', 'verified','serial_number',
+    list_display = ('common_name', 'trust_anchor','status','verified','serial_number',
                     'organization', 'creation_date', 'expiration_date')
     
     search_fields = ('common_name','status', 'verified','serial_number',
