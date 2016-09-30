@@ -85,7 +85,7 @@ def create_intermediate_anchor_certificate(request, serial_number):
             return HttpResponseRedirect(reverse('home'))
             
         else:
-            #The form is invalid
+             # The form is invalid
              messages.error(request,_("Please correct the errors in the form."))
              return render_to_response('generic/bootstrapform.html',
                                             {'form': form,
@@ -94,7 +94,7 @@ def create_intermediate_anchor_certificate(request, serial_number):
                                              },
                                             RequestContext(request))
             
-   #this is a GET
+    # This is a GET
    
     up = UserProfile.objects.get(user=request.user)
     data ={'contact_first_name': request.user.first_name,
@@ -132,10 +132,9 @@ def certificate_dashboard(request):
 
 @login_required
 def view_anchor(request, serial_number):
-    #get all active trust anchors descendants and associated domain-bound certs
+    # get all active trust anchors descendants and associated domain-bound certs
     anchor = get_object_or_404(TrustAnchorCertificate, serial_number=serial_number,
                                owner = request.user)
-
     active_children=[]
     revoked_children=[]
     revoked_anchors=[]
@@ -180,8 +179,15 @@ def view_anchor(request, serial_number):
                                                              )
      
     
-    revoked_endpoints = EndpointCertificate.objects.filter(~Q(trust_anchor__parent = None),
-                                                             status="revoked")
+    #revoked_endpoints = EndpointCertificate.objects.filter(~Q(trust_anchor__parent = None),
+    #                                                          trust_anchor__parent = anchor,
+    #                                                          status="revoked")
+
+    revoked_endpoints = EndpointCertificate.objects.filter(trust_anchor = anchor,
+                                                           status="revoked")
+
+           
+    
     # EndpointCertificate.objects.filter(trust_anchor__parent=!None
     #                                                     status="good") | \
     #                     EndpointCertificate.objects.filter(trust_anchor=anchor,
