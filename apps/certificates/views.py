@@ -19,6 +19,66 @@ from mptt.utils import drilldown_tree_for_node, previous_current_next
 from django.db.models import Q
 
 
+
+@login_required
+def view_anchor(request, serial_number):
+    # get all active trust anchors descendants and associated domain-bound certs
+    anchor = get_object_or_404(TrustAnchorCertificate, serial_number=serial_number,
+                               owner = request.user)
+    active_children=[]
+    revoked_children=[]
+    revoked_anchors=[]
+    revoked_descandants=[]
+    descendant_anchors=[]
+    descendant_revoked_anchors=[]
+    active_endpoints =[]
+    revoked_anchors=[]
+    revoked_endpoints =[]
+    
+    
+    for c in anchor.get_children():
+        
+        if str(c.owner)==str(request.user) and c.status in ("good", "verified"):
+             active_children.append(c)
+        elif str(c.owner)==str(request.user) and c.status=="revoked":
+            revoked_children.append(c)
+
+    for d in anchor.get_descendants():
+        
+        if str(d.owner)==str(request.user) and d.status in ("good", "verified"):
+             descendant_anchors.append(d)
+        elif str(d.owner)==str(request.user) and d.status=="revoked":
+            descendant_revoked_anchors.append(d)
+    
+    active_anchors  = [anchor, ] + active_children
+    
+    revoked_anchors = descendant_revoked_anchors
+    
+    
+    active_endpoints =  EndpointCertificate.objects.filter(trust_anchor = anchor,
+                                                             status="good"
+                                                             )| \
+                       EndpointCertificate.objects.filter(trust_anchor = anchor,
+                                                             status="unverified"
+                                                             )
+     
+    revoked_endpoints = EndpointCertificate.objects.filter(trust_anchor = anchor,
+                                                           status="revoked")
+    
+    revoked_certs = revoked_anchors + list(revoked_endpoints)
+        
+        
+    context={ 'anchor': anchor,
+              'active_cert_list': active_anchors,
+              'active_endpoints': active_endpoints,
+              'revoked_cert_list': revoked_certs, 
+             }
+    
+    return render_to_response('anchor.html', RequestContext(request, context,))
+
+
+
+
 @login_required
 def view_endpoint_details(request, serial_number):
     
@@ -128,77 +188,6 @@ def certificate_dashboard(request):
     return render_to_response("index.html",
                           {'nodes':active_tas},
                           context_instance=RequestContext(request))
-
-
-@login_required
-def view_anchor(request, serial_number):
-    #get all active trust anchors descendants and associated domain-bound certs
-    anchor = get_object_or_404(TrustAnchorCertificate, serial_number=serial_number,
-                               owner = request.user)
-
-    active_children=[]
-    revoked_children=[]
-    revoked_anchors=[]
-    revoked_descandants=[]
-    descendant_anchors=[]
-    descendant_revoked_anchors=[]
-    active_endpoints =[]
-    revoked_anchors=[]
-    revoked_endpoints =[]
-    
-    
-    for c in anchor.get_children():
-        
-        if str(c.owner)==str(request.user) and c.status in ("good", "verified"):
-             active_children.append(c)
-        elif str(c.owner)==str(request.user) and c.status=="revoked":
-            revoked_children.append(c)
-
-    for d in anchor.get_descendants():
-        
-        if str(d.owner)==str(request.user) and d.status in ("good", "verified"):
-             descendant_anchors.append(d)
-        elif str(d.owner)==str(request.user) and d.status=="revoked":
-            descendant_revoked_anchors.append(d)
-    
-    active_anchors  = [anchor, ] + active_children
-    
-    revoked_anchors = descendant_revoked_anchors
-    
-    
-    # active_endpoints = EndpointCertificate.objects.filter(~Q(trust_anchor__parent = None),
-    #                                                          status="good"
-    #                                                          ) | \
-    #                    EndpointCertificate.objects.filter(~Q(trust_anchor__parent = None),
-    #                                                          status="unverified"
-    #                                                          )| \
-    active_endpoints =  EndpointCertificate.objects.filter(trust_anchor = anchor,
-                                                             status="good"
-                                                             )| \
-                       EndpointCertificate.objects.filter(trust_anchor = anchor,
-                                                             status="unverified"
-                                                             )
-     
-    
-    revoked_endpoints = EndpointCertificate.objects.filter(~Q(trust_anchor__parent = None),
-                                                             status="revoked")
-    # EndpointCertificate.objects.filter(trust_anchor__parent=!None
-    #                                                     status="good") | \
-    #                     EndpointCertificate.objects.filter(trust_anchor=anchor,
-    #                                                 status="unverified")
-    #     
-    # revoked_endpoints = EndpointCertificate.objects.filter(trust_anchor=anchor,
-    #                                                     status="revoked")   
-    revoked_certs = revoked_anchors + list(revoked_endpoints)
-        
-        
-    context={ 'anchor': anchor,
-              'active_cert_list': active_anchors,
-              'active_endpoints': active_endpoints,
-              'revoked_cert_list': revoked_certs, 
-             }
-    
-    return render_to_response('anchor.html', RequestContext(request, context,))
 
 
 @login_required
