@@ -13,7 +13,7 @@ urlpatterns = patterns('',
     url(r'password-reset-request/', password_reset_request,
         name='password_reset_request'),
     
-    url(r'account/', account_settings, name='account_settings'),
+    url(r'settings$', account_settings, name='account_settings'),
     url(r'reset-password/(?P<reset_password_key>[^/]+)/$', reset_password,
         name='password_reset_request'),
     
